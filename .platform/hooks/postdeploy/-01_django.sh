@@ -1,4 +1,7 @@
 #!/bin/bash
+sudo apt update
+sudo apt install libvips-dev
+
 
 source /var/app/venv/*/bin/activate && {
 
