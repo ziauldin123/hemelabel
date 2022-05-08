@@ -3,9 +3,9 @@
 
 
 
-{% block content %}
 
 
+{% block head %}
 <script src="{% static 'labeller/Cell.js' %}"></script>
 <script src="{% static 'labeller/CellCounter.js' %}"></script>
 <script src="{% static 'labeller/CellSummary.js' %}"></script>
@@ -18,11 +18,11 @@
 <link rel="stylesheet" href="{% static 'labeller/dropzone-5.7.0/dist/dropzone.css' %}">
 
 <script>
-  
-  
+
+
   // My own Dropzone //
   Dropzone.options.mySlideDropzone = {
-    
+
     paramName: function() {
       return "file";
     },
@@ -71,7 +71,10 @@
     }
   };
 </script>
+ {% endblock head %}
 
+
+ {% block content %}
 <h2>Slides ({{slides|length}})</h2>
 
 <!-- Slide Uploader (Dropzone) -->
@@ -84,7 +87,7 @@
     {% csrf_token %}
   </form>
     <!-- <hr style="width: 50%;"> -->
-  
+
   <div class="d-flex flex-row-reverse pt-1 pb-2">
     <button id="upload-btn" type="button" class="btn upload-btn p-2">Add Slides</button>
   </div>
@@ -108,7 +111,7 @@
             <div class="px-2" id='slide_cellSummary_sid_{{slide.sid}}'></div>
           </div>
         </div>
-        
+
         <script>
             var cellSummary = new CellSummary('sid', {{slide.sid}});
             $('#slide_cellSummary_sid_{{slide.sid}}').append(cellSummary.getNewULForSlide());
@@ -128,14 +131,14 @@
 {% empty %}
   <div class="container-fluid justify-content-center">
     <h3 style="border-bottom: 0px">No Slides</h3>
-  </div>  
+  </div>
 {% endfor %}
 
 
 
 <script>
 
-  
+
 
 </script>
 {% endblock content %}
