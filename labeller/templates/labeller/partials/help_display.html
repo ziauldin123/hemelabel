@@ -1,0 +1,28 @@
+{% load static %}
+<img id="helpscreen" style="display:none;" src="{% static 'labeller/images/Reference_maturation.png' %}" />
+
+<script>
+
+class HelpDisplay {
+	static toggle () {
+		console.log("help display", $("#helpscreen"), $("#helpscreen").is(":visible"))
+		if ($("#helpscreen").is(":visible")){
+			$("#helpscreen").fadeOut(500);
+		}
+		else{
+			$("#helpscreen").fadeIn(500);
+		}
+	}
+}
+
+$('#helpscreen').click(function() { 
+    $(this).fadeOut(500);
+});
+
+window.addEventListener('keyup', (e) => {
+		if (e.code == "KeyH") {
+			HelpDisplay.toggle();
+		} 
+});
+
+</script>

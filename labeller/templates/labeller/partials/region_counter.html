@@ -1,0 +1,16 @@
+{% load static %}
+<script>
+	var regions_json = '{{regions_json}}';
+	console.log(regions_json);
+</script>
+
+<script src="{% static 'labeller/Region.js' %}"></script>
+<script src="{% static 'labeller/partials/region_counter.js' %}"></script>
+
+<div id="region_counter" class="purple_box">
+	<h2>Region Counter</h2>
+	<h3 id="Complete_Regions_Segmentation" class="counter"></h3>
+	<h3 id="Incomplete_Regions_Segmentation" class="counter"></h3>
+	<h3 id="Complete_Regions_Classification" class="counter"></h3>
+	<h3 id="Incomplete_Regions_Classification" class="counter"></h3>
+</div>	

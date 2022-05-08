@@ -1,0 +1,133 @@
+<div id="controls">
+  
+  <form class="form-horizontal control-form-flex-box" style="justify-content: left;">
+  
+    <div class="control-group">
+      <label class="control-label" for="brightness">Brightness</label>
+      <div class="controls">
+        <input type="range" data-default=1 value=1 min=0 max=1 step=0.1 id="brightness" />
+        <!-- <p id="brightness_output" class='pull-right'></p> -->
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="contrast">Contrast</label>
+      <div class="controls">
+        <input type="range" data-default=1 value=1 min=0 max=2 step=0.1 id="contrast" />
+        <!-- <p id="contrast_output" class='pull-right'></p> -->
+      </div>
+    </div>
+    <!-- <div class="control-group">
+      <label class="control-label" for="grayscale">Grayscale</label>
+      <div class="controls">
+        <input type="range" data-default=0 value=0 min=0 max=1 step=0.1 id="grayscale" />
+      </div>
+    </div> -->
+    <div class="control-group">
+      <!-- <label class="control-label" for="reset">&nbsp;</label> -->
+      <div class="controls">
+        <a href='#' type='button' id='reset' class='btn basic-link-btn'>Reset to defaults</a href='#'>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+
+$(document).ready(function() {
+  var controls_input = $("#controls input"),
+  image = $("canvas, img");
+  
+  function updateDisplay() {
+    image = $("canvas, img");
+    var newCSS = '';
+    controls_input.each(function(){
+      var units = '';
+
+      if ($(this).attr('id') == 'blur') {
+        units = 'px';
+      } else if ($(this).attr('id') == 'hue-rotate') {
+        units = 'deg';
+      }
+      newCSS += $(this).attr('id')+"("+$(this).val()+units+") ";
+      $("#"+$(this).attr('id')+"_output").text($(this).attr('id')+"("+$(this).val()+units+")");
+    })
+    image.css("-webkit-filter", newCSS);
+    image.css("-moz-filter", newCSS);
+    image.css("-ms-filter", newCSS);
+    image.css("-o-filter", newCSS);
+    image.css("filter", newCSS);
+  }
+
+  updateDisplay();
+
+  controls_input.change(updateDisplay);
+
+  $("#reset").click(function(){
+    controls_input.each(function(){
+      $(this).val($(this).attr('data-default'));
+    });
+    updateDisplay();
+    return false;
+  });
+});
+
+</script>
+
+
+
+
+<!-- Image Control Bars -->
+<!-- http://css3.bradshawenterprises.com/filters/ -->
+
+
+
+        <!--     <div class="control-group">
+      <label class="control-label" for="grayscale">Grayscale</label>
+      <div class="controls">
+        <input type="range" data-default=0 value=0 min=0 max=1 step=0.1 id="grayscale" />
+        <p id="grayscale_output" class='pull-right'></p>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="sepia">Sepia</label>
+      <div class="controls">
+        <input type="range" data-default=0 value=0 min=0 max=1 step=0.1 id="sepia" />
+        <p id="sepia_output" class='pull-right'></p>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="saturate">Saturate</label>
+      <div class="controls">
+        <input type="range" data-default=1 value=1 min=0 max=1 step=0.1 id="saturate" />
+        <p id="saturate_output" class='pull-right'></p>
+      </div>
+    </div>
+      <div class="control-group">
+      <label class="control-label" for="hue-rotate">Hue-rotate</label>
+      <div class="controls">
+        <input type="range" data-default=0 value=0 min=0 max=360 step=1 id="hue-rotate" />
+        <p id="hue-rotate_output" class='pull-right'></p>
+      </div>
+    </div> -->
+    <!-- <div class="control-group">
+      <label class="control-label" for="invert">Invert</label>
+      <div class="controls">
+        <input type="range" data-default=0 value=0 min=0 max=1 step=0.1 id="invert" />
+        <p id="invert_output" class='pull-right'></p>
+      </div>
+    </div> -->
+    <!-- <div class="control-group">
+      <label class="control-label" for="opacity">Opacity</label>
+      <div class="controls">
+        <input type="range" data-default=1 value=1 min=0 max=1 step=0.1 id="opacity" />
+        <p id="opacity_output" class='pull-right'></p>
+      </div> 
+    </div>-->
+    <!--       <div class="control-group">
+      <label class="control-label" for="blur">Blur</label>
+      <div class="controls">
+        <input type="range" data-default=0 value=0 min=0 max=10 step=1 id="blur" />
+        <p id="blur_output" class='pull-right'></p>
+      </div>
+    </div> -->

@@ -1,0 +1,395 @@
+<!-- Used by all_cells_for_diagnosis2.hmtl -->
+{% load static %}
+<script>
+  var GLOBAL_INITIAL_CELL_LOAD = 50
+  var GLOBAL_LOAD_MORE_CELL_LOAD = 100
+  
+</script>
+
+
+<div id="lineage_list_container"></div>
+<script>
+  function loadAllCellsButtonClickHandler(e){
+    // console.log(e)
+    lineage_abb = $(e).data('lineage_abb')
+    var pathname = window.location.pathname.split('/')
+    var context = {}
+    if (pathname[1] == 'all_cells_for_diagnosis2'){
+      context = {
+        'id_type': 'diagnosis_pk',
+        'id_val': pathname[2],
+        'query_type': 'all_cells_single_type',      
+        // 'class_label_name': lineage_name,
+        'class_label_abb': lineage_abb,
+      }
+
+      $.get('/generic_ajax_get/', context, function(json) {
+        if(json['success'] == true) {
+          // console.log('generic_ajax_get successful');
+          $(".cell_list_item."+json['class_label_abb']).remove()
+          populateCellLists(json['cells_json'], json['cell_types_json']);
+        }
+      });
+    }
+  }
+
+  function setupLoadAllCellsButton(lineage_abb){
+    var load_all_button = '<button id="'+lineage_abb+'_load_all_button" class="load_all_button">Load all</button>'
+    $("#"+lineage_abb + '_cells_inline').after(load_all_button)
+    $('#'+lineage_abb+'_load_all_button').data('lineage_abb', lineage_abb);
+    $('#'+lineage_abb+'_load_all_button').click(function(){
+      // console.log(this)
+      loadAllCellsButtonClickHandler($(this));
+      $('#'+lineage_abb+'_load_more_button').remove()
+      $('#'+lineage_abb+'_load_all_button').remove()
+    });
+    
+  }
+
+  function loadMoreCellsButtonClickHandler(e){
+    console.log(e)
+    lineage_abb = $(e).data('lineage_abb')
+      var pathname = window.location.pathname.split('/')
+      var context = {}
+      if (pathname[1] == 'all_cells_for_diagnosis2'){
+        old_finish = $('#h2_'+lineage_abb).data('finish');
+        console.log(old_finish)
+        num_new_cells = GLOBAL_LOAD_MORE_CELL_LOAD;
+        context = {
+          'id_type': 'diagnosis_pk',
+          'id_val': pathname[2],
+          'query_type': 'more_cells_single_type',
+          'old_finish': old_finish,
+          'num_new_cells': num_new_cells,
+          // 'class_label_name': lineage_name,
+          'class_label_abb': lineage_abb,
+        }
+
+        $.get('/generic_ajax_get/', context, function(json) {
+          if(json['success'] == true) {
+            console.log('generic_ajax_get successful loadMoreCellsButtonClickHandler');
+            // $(".cell_list_item."+json['class_label_abb']).remove()
+            populateCellLists(json['cells_json'], json['cell_types_json']);
+            $('#h2_'+lineage_abb).data('finish', json['new_finish'] )
+          }
+          else{
+            console.log("no more cells")
+          }
+        });
+      }
+  }
+
+  function setupLoadMoreCellsButton(lineage_abb){
+    var load_more_button = '<button id="'+lineage_abb+'_load_more_button" class="load_more_button">Load More</button>'
+    $("#"+lineage_abb + '_cells_inline').after(load_more_button)
+    $('#'+lineage_abb+'_load_more_button').data('lineage_abb', lineage_abb);
+    $('#'+lineage_abb+'_load_more_button').click(function(){
+      console.log(this)
+      loadMoreCellsButtonClickHandler($(this));
+    });
+  }
+
+  function setupHorinzontalCellListHeader(lineage_abb, lineage_name){
+    var pathname = window.location.pathname.split('/')
+    // console.log(window.location.pathname.split('/'), )
+    var context = {}
+    
+    
+    var header ='<h3 id="h2_' + lineage_abb +'">'+lineage_name+'</h3>';
+    // console.log(temp_div)
+    var cells_inline = '<div id="'+lineage_abb + '_cells_inline" class="inline_cells"></div>'
+    //console.log(header+cells_inline)
+    $("#lineage_list_container").append(header);
+    $("#lineage_list_container").append(cells_inline);
+    $("#"+lineage_abb + '_cells_inline').data('lineage_abb', lineage_abb)
+
+    // console.log(context)
+    if (pathname[1] == 'all_cells_for_diagnosis2'){
+      context = {
+       'id_type': 'diagnosis_pk',
+       'id_val': pathname[2],
+       'query_type': 'count',      
+      //  'query_children_model': 'cell',
+       'class_label_name': lineage_name,
+       'class_label_abb': lineage_abb,
+      }
+
+    }
+
+    $.get('/generic_ajax_get/', context, function(json) {
+      if(json['success'] == true) {
+        // console.log('generic_ajax_get successful');
+        var lineage_name = json['class_label_name']
+ 
+        var temp_div = lineage_name + " (" + json['count'] + ")";
+        $("#h2_" + lineage_abb).html(temp_div);
+      }
+    });
+  }
+
+  function createIndividualHorizontalCellList(lineage_abb, lineage_name) {
+    // console.log("Entering CreateIndividualHorizontalCellList", lineage_name);
+    // var cell_type_length = $("#" + lineage_name + "_cells_inline").children().length;
+    // console.log($('#h2_'+lineage_name).text())
+    setupHorinzontalCellListHeader(lineage_abb, lineage_name)
+   
+    setupLoadAllCellsButton(lineage_abb);
+    // console.log('data lineage_abb', $("#"+lineage_abb + '_cells_inline').data('lineage_abb'))
+    
+    setupLoadMoreCellsButton(lineage_abb);
+    
+  }
+
+  function loadMoreButtonClickHandler(e) {
+    console.log('loadMoreButtonClickHandler', e, this);
+  }
+
+  function populateCellLists (cells_json, cell_types_json){
+		//console.log('entering populatCellList', cells_json, cell_types_json);
+		// console.log('entering populatCellList');
+		var cells = Cell.LoadCellsFromJson(cells_json, cell_types_json);
+		
+    // console.log('cells', cells)
+		var counter = 1;
+		for (var key in cells) {
+			var cell = cells[key];
+			//console.log(cell)
+			var cid = cell.getCID();
+			var cell_div = cell.getDivForCellList();
+			var jq_obj = $("#"+cell.getLineage()+"_cells_inline").append(cell_div);
+
+			var jq_obj_celltype = $("#"+cell.cell_type+"_cells_inline").append(cell_div);
+      
+      //console.log(jq_obj, jq_obj_celltype)
+      
+
+		}
+    
+
+		$('.cell_list_item').on('click', function (){
+			HorizontalCellList.cellListItemClickHandler($(this))
+		});
+    //Cell.UpdateHorizontalCellCounts();
+	}
+
+  function addStartAndFinishClasses(start, finish, lineage_abb) {
+    console.log('addStartAndFinishClasses', start, finish, lineage_abb)
+    $('#h2_'+lineage_abb).data('start', start)
+    $('#h2_'+lineage_abb).data('finish', finish)
+  }
+
+  function populateIndividualHorizontalCellList(lineage_abb, lineage_name, start, finish){
+    var pathname = window.location.pathname.split('/')
+    // console.log(window.location.pathname.split('/'), )
+    var context = {}
+
+    if (pathname[1] == 'all_cells_for_diagnosis2'){
+      context = {
+       'id_type': 'diagnosis_pk',
+       'id_val': pathname[2],
+       'query_type': 'get_cells_interval',      
+      //  'query_children_model': 'cell',
+       'class_label_name': lineage_name,
+       'class_label_abb': lineage_abb,
+       'start': start, 
+       'finish': finish,
+      }
+      
+      
+      $.get('/generic_ajax_get/', context, function(json) {
+        if(json['success'] == true) {
+          // console.log('generic_ajax_get successful PopulateIndividualHorizontalCellList', json['cell_types']);
+          populateCellLists (json['cells_json'], json['cell_types_json']);
+          addStartAndFinishClasses(json['start'], json['finish'], json['class_label_abb'])
+        }
+      });
+
+
+
+    }
+
+  }
+
+  function CreateHorizontalCellLists() {
+    console.log("Entering CreateHorizontalCellLists");
+    // var lineages = [
+    //   "unlabelled",
+    //   "myeloid",
+    //   "lymphoid",
+    //   "erythroid",
+    //   "megakaryocytic",
+    //   "misc",
+    // ];
+
+    // for (var key in lineages) {
+      // console.log('meow', key, lineages[key])
+      // CreateIndividualHorizontalCellList(key, lineages[key]);
+    // }
+
+      // $('#lineage_list_'+lineage_name).replaceWith(temp_div);
+
+    for (var key in Cell.classLabelDict) {
+      createIndividualHorizontalCellList(key, Cell.classLabelDict[key]);
+    }
+
+    for (var key in Cell.classLabelDict) {
+      populateIndividualHorizontalCellList(key, Cell.classLabelDict[key], 0, GLOBAL_INITIAL_CELL_LOAD);
+      // break;
+    }
+
+
+  }
+</script>
+
+<!-- <script src="{% static 'labeller/Cell.js' %}"></script>
+ -->
+<script>
+  console.log('entering horizontal_cells.html javascript');
+
+  class HorizontalCellList {
+
+
+  	static nextCell(offset) {
+      console.log('entering next cell');
+
+  		if (offset !=1 && offset != -1){
+  			console.log("Error in HorizontalCellList:nextCell - wrong offset", offset);
+  			return false;
+  		}
+
+      if ($('.clicked_cell').length==0) {
+          console.log('No clicked_cell in HorizontalCellList.nextCell')
+          return;
+        }
+      if ($('.clicked_cell').length>1){
+          console.log('Too many clicked_cell objects in HorizontalCellList.nextCell', $('.clicked_cell'))
+          return;
+      }
+
+      var cell = $('.clicked_cell')
+
+  		// if (cell.siblings.length == 0) {
+  		// 	console.log("cell has no siblings")
+  		// 	return false;
+  		// } 
+
+  		if (offset == 1 && cell.next().length ==1) {
+  //				var current_cell = cell.next();
+  				var cid = Cell.getCIDfromDivID(cell.next()[0]);
+  				Cell.selectCellByCID(cid);
+          cell.removeClass('clicked_cell');
+          cell.next().addClass('clicked_cell');
+  				return;
+  			}
+
+  			else if (offset == -1 && cell.prev().length ==1) {
+  				var cid = Cell.getCIDfromDivID(cell.prev()[0]);
+  				Cell.selectCellByCID(cid);
+          cell.removeClass('clicked_cell');
+          cell.prev().addClass('clicked_cell');
+  				return;
+  		}
+
+  		return;
+  	}
+
+  	static addKeyboardEventListeners(){
+      {% comment %} window.addEventListener('keydown', function(e) {
+        if(e.key === 'r' && e.ctrlKey) {
+          e.preventDefault();
+      }
+      });
+  	{% endcomment %}
+      window.addEventListener('keydown', function(e) {
+        if(e.keyCode == 32 && e.target == document.body) {
+          e.preventDefault();
+        }
+      });
+
+  			window.addEventListener('keyup', (e) => {
+          console.log('horizontal key pressed event in main_lineages_horizontal');
+
+
+  				var code = e.code;
+
+  				switch(code) {
+
+  					case "ArrowLeft": HorizontalCellList.nextCell(-1);  break;
+  					case "ArrowRight": HorizontalCellList.nextCell(1); break;
+  					//case "Enter": nextRegion(); break;
+            case "Space": HorizontalCellList.selectFirstUnlabelledCell(); break;
+            case "Backslash": Cell.deleteCellByCID(Cell.currentCellCID()); break;
+  				}
+  			});
+  	}
+
+  	static cellListItemClickHandler(jq_obj){
+  		// console.log("this item was clicked on", jq_obj);
+  		var cid = Cell.extractCIDFromJQueryObjectID(jq_obj);
+      // console.log($('.clicked_cell'))
+   		Cell.selectCellByCID(cid);
+      $('.clicked_cell').removeClass('clicked_cell');
+      jq_obj.addClass('clicked_cell');
+  	}
+
+
+  	static selectFirstUnlabelledCell(){
+  		if ($(".cell_list_item.unlabelled").first().length>0){
+  			var cid = Cell.extractCIDFromJQueryObjectID($(".cell_list_item.unlabelled").first());
+  			Cell.selectCellByCID(cid);
+        $('.clicked_cell').removeClass('clicked_cell');
+        $(".cell_list_item.unlabelled").first().addClass('clicked_cell');
+  		}
+  	}
+
+  	static populateCellLists (cells_json, cell_types_json){
+  		//console.log('entering populatCellList', cells_json, cell_types_json);
+  		// console.log('entering populatCellList');
+  		var cells = Cell.LoadCellsFromJson(cells_json, cell_types_json);
+
+      // console.log('cells', cells)
+  		var counter = 1;
+  		for (var key in cells) {
+  			var cell = cells[key];
+  			// console.log(cell)
+  			var cid = cell.getCID();
+  			var cell_div = cell.getDivForCellList();
+  			var jq_obj = $("#"+cell.getLineage()+"_cells_inline").append(cell_div);
+
+  			var jq_obj_celltype = $("#"+cell.cell_type+"_cells_inline").append(cell_div);
+        //console.log(jq_obj, jq_obj_celltype)
+  		}
+      
+  		$('.cell_list_item').on('click', function (){
+  			HorizontalCellList.cellListItemClickHandler($(this))
+  		});
+      //Cell.UpdateHorizontalCellCounts();
+  	}
+
+  	static addCellClassHorizontalRows() {
+  		for (var key in Cell.classLabelDict) {
+  			//console.log('meow', key, Cell.classLabelDict[key])
+  			var temp_div = '<h2 id="h2_'+key+'">'+Cell.classLabelDict[key]+'</h2><div id="'+key+'_cells_inline" class="inline_cells"></div>'
+  			$("#celltype_inline_container").append(temp_div);
+  		}
+  	}
+
+
+  }
+
+  $ (document).ready(function() {
+  	CreateHorizontalCellLists()
+  	// if ('{{cells_json}}'!='none') {
+  	//  	var cells_json = '{{cells_json}}';
+  	//  	var celltypes_json = '{{celltypes_json}}';
+  	//  	// console.log('main_lineages_horizontal ready cells_json', cells_json)
+  	// 	// console.log('main_lineages_horizontal ready celltypes_json', celltypes_json)
+  	//  	// console.log(celltypes_json)
+   	// 	HorizontalCellList.addCellClassHorizontalRows();
+   	// 	HorizontalCellList.populateCellLists(cells_json, celltypes_json);
+   	// 	//Cell.UpdateHorizontalCellCounts();
+   	// 	HorizontalCellList.addKeyboardEventListeners();
+   	// 	HorizontalCellList.selectFirstUnlabelledCell();
+  	// }
+  });
+</script>

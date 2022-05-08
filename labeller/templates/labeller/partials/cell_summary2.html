@@ -1,0 +1,42 @@
+{% load static %}
+<div id='slide_info_row'></div>
+<script src="{% static 'labeller/CellSummary.js' %}"></script>
+
+<script>
+  current_url = window.location.href;
+  if (current_url.search('label_slide') != -1) {
+    var id_type = 'sid'
+    var id_val = '{{slide.sid}}'
+  }
+  else if (current_url.search('label_region') != -1){
+    var id_type = 'rid'
+    var id_val = '{{region.rid}}'
+  }
+  else if (current_url.search('diagnosis') != -1){
+    var id_type = 'diagnosis_pk'
+    var id_val = '{{diagnosis.pk}}'
+  }
+  else if (current_url.search('project') != -1){
+    var id_type = 'project_pk'
+    var id_val = '{{project.pk}}'
+  }
+  else {
+    console.log("Error in slide_summary.html")
+  }
+  var cellSummary = new CellSummary(id_type, id_val);
+  // $('#slide_info_row').append(cellSummary.getULForSlide());
+  $('#slide_info_row').append(cellSummary.getNewULForSlide());
+
+  cellSummary.addInfoButtonOnClick();
+  
+  $('.bigtable').hide();
+</script>
+
+<script>
+  $ (document).ready(function() {
+    // $('#slide_info_'+id_type+'_'+id_val).trigger( "click" );
+    // console.log('#slide_info'+id_type+'_'+id_val);
+    // console.log($('#slide_info'+id_type+'_'+id_val))
+
+  });
+</script>

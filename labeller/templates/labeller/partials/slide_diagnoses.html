@@ -1,0 +1,312 @@
+{% load static %}
+<!--- Three Column container-fluid -->
+<div class='bigtable_box container-fluid'>
+  <div class="row">
+    <!-- Column 1 -->
+    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+      	<!-- <div class="d-flex flex-row   " > -->
+      <div class="px-2">
+        <b>Slide Info:</b>
+        <a href="/label_slide/{{slide.sid}}/" class="btn btn-primary p-1"><i class="bi-arrow-right-circle-fill"></i></a>
+      </div>
+      <div class="px-2">ID: {{slide.id}}</div>
+      <div class="px-2">SID: {{slide.sid}}</div>
+      <div class="px-2">Name: {{slide.name}}</div>
+    <!-- </div> -->
+    </div>
+
+    <!-- Column 2 -->
+    <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 text-right">
+      <div class="align-content-end" id="slide_info_row_{{slide.pk}}">
+      {% for dx in slide.diagnoses.all %}
+        
+        {% if forloop.first %}
+        <div class="" id="dx_title_{{slide.pk}}">
+          <b>Diagnoses:</b>
+        </div>
+        {% endif %}
+        <div class=" diagnosis_div_slide_{{slide.pk}}" id='diagnosis_div_{{slide.pk}}_{{dx.pk}}'>
+          {{dx.name}} ({{dx.abbreviation}}) 
+          <button id="delete_diagnosis_{{slide.pk}}_{{dx.pk}}" class="{{slide.pk}} {{dx.pk}} btn p-0"><i class="bi-trash"></i> </button>
+          <script>
+            $('#delete_diagnosis_{{slide.pk}}_{{dx.pk}}').on('click', Diagnosis.removeDiagnosisFromSlideClickHandler);		
+          </script>
+        </div>
+        {% empty %}
+          <div class=" dx_title" id="dx_title_{{slide.pk}}">
+            <p><b>Diagnoses:</b></p>
+            <p>None</p>
+          </div>			
+        {% endfor %}
+      </div>
+
+      <!-- Tissue Type -->
+      <div class="mt-2">
+        <div class="" id="slide_info_row_{{ slide.sid }}">
+
+          <div class="" id="tt_title_{{ slide.sid }}">
+            <b>Tissue Type:</b>
+          </div>
+          {% if slide.tissue %}
+          <div id="slide_tissue_{{slide.sid}}" class="slide_tissue_type_{{slide.sid}}">
+
+            <p id="tissue_display_slide_{{slide.sid}}">
+              {{ slide.get_tissue_display }}
+              <button id="delete_tissue_{{slide.sid}}" class="{{slide.sid}} btn p-0"><i class="bi-trash"></i></button>
+            </p>
+              
+            <script>
+              // ADD SCRIPT TO DELETE TISSUE HERE
+            </script>
+
+          </div>
+          {% else %}
+          <div class="slide_tissue_type">
+            <p>None</p>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+    </div>  
+
+    <!-- Column 3 -->
+    <div class="col-xl-5 col-lg-4 col-md-12 col-sm-12 text-right">
+    <!-- <div class="d-flex flex-row-reverse" > -->
+      <form id="form_slide_pk_{{slide.sid}}" class="dx_form "> 
+        <select name="dx_options_slide_pk_{{slide.sid}}" id="dx_options_slide_pk_{{slide.sid}}" placeholder="No diagnosis" class="mb-2" style="font-size:.9rem;">
+          <option value="none" selected></option>
+          {% for dx_option in dx_options %}
+          <option value="{{slide.pk}}_{{dx_option.pk}}_{{dx_option}}" id="dx_option_pk_{{dx_option.pk}}">{{dx_option}}</option>
+          {% endfor %}
+        </select>
+        <input type="submit" value="Add Diagnosis" class="btn btn-secondary">
+          <!-- <span class="px-1"></span> -->
+      </form> 
+
+      <!-- Tissue Type -->
+      <div class="mt-2" data-id="{{ slide.sid }}">
+        <form id="tt_form_slide_{{slide.sid}}" class="dx-form">
+          <select id="tt_options_slide_{{slide.sid}}" data_id="{{slide.sid}}" placeholder="No Tissue Type" class="mb-2" style="font-size: .9rem;">
+            <option id="tt_slide_{{slide.sid}}" value="none"></option>
+            <option id="tt_slide_{{slide.sid}}" data-id="bone_marrow_aspirate" value="a">Bone Marrow Aspirate</option>
+            <option id="tt_slide_{{slide.sid}}" data-id="Peripheral Blood" value="b">Peripheral Blood</option>
+            <option id="tt_slide_{{slide.sid}}" data-id="Bone Marrow Biopsy" value="c">Bone Marrow Biopsy</option>
+            <option id="tt_slide_{{slide.sid}}" data-id="Bone Marrow IHC or Special Strain" value="d">Bone Marrow IHC or Special Strain</option>
+            <option id="tt_slide_{{slide.sid}}" data-id="Touch Prep" value="e">Touch Prep</option>
+            <option id="tt_slide_{{slide.sid}}" data-id="Bone Marrow Clot" value="f">Bone Marrow Clot</option>
+            <option id="tt_slide_{{slide.sid}}" data-id="body_fluid" value="g">Body Fluid</option>
+            <!-- <option id="tt_slide_{{slide.sid}}" value="Test Type">Test Type 1</option> -->
+          </select>
+          <input type="submit" value="Select Tissue Type" class="btn btn-secondary">
+        </form>
+      </div>
+      
+    </div>
+    
+  </div> <!-- Close Row -->
+
+  <!-- Row 2 -->
+  <div class="row">
+      <div class="col-xl-12">
+        <div class="px-2">
+          <div>
+
+          {% if slide.notes %}
+            <p>
+              <b>Notes:</b> 
+            </p>
+
+            <div id="edit_slide_note_{{slide.sid}}" class="editnote px-2" data-id="{{ slide.sid }}" data-type="notes">
+              <p>{{ slide.notes }}</p>
+            </div>
+            <!-- <p><i style="font-size: small; color:#777;">click note to edit</i></p> -->
+            <!-- <button id="save_note_slide_{{slide.sid}}" type="submit" style="font-size: 1rem; padding: .2rem .5rem .1rem .5rem" class="btn btn-slide-info">
+              Save Note
+            </button> -->
+
+          <!-- <button id="delete_note_{{slide.pk}}" class="{{slide.pk}} btn p-0">
+              <i class="bi-trash"></i>
+            </button>
+            <script>
+              $('#delete_note_{{slide.pk}}').on('click', Diagnosis.removeNoteFromSlideClickHandler);
+            </script> -->
+
+          {% else %}
+
+            <p><b>Notes:</b></p>
+            
+            <div id="edit_slide_note_{{slide.sid}}" class="editnote px-2" data-id="{{ slide.sid }}" data-type="notes">
+              None
+            </div>
+            <!-- <p>
+              <i style="font-size: small; color:#777;">click note to edit</i>
+            </p> -->
+
+          {% endif %}
+            </div>
+
+            <!-- <div>
+              <form id="slide_note_form_{{slide.sid}}" class="note_form">
+                <input type="text" name="slide_note_pk_{{slide.sid}}" id="slide_note_pk_{{slide.sid}}" placeholder="Type note here..." class="mb-2" style="font-size: .9rem">
+                <input type="submit" value="Add Note" style="font-size:1rem; padding: .2rem 0.5rem 0.1rem .5rem !important;" class="bn btn-slide=info">                
+              </form>
+            </div> -->
+
+         
+          <!-- <b>Notes</b>: {{slide.notes}} | {{slide.sid}} || {{slides|length}} -->
+
+          <!-- NOTES FORM TAKE 2 -->
+
+          <!-- END NOTES FORM TAKE 2 -->
+                
+          
+        </div>
+      </div>
+  </div>
+
+
+</div> <!-- Close container-fluid -->
+
+
+<!-- Add diagnosis button logic -->
+<script>
+  // this is the id of the form
+  $("#form_slide_pk_{{slide.sid}}").submit(function(e) {
+    e.preventDefault();
+    chosen_diagnosis = $('#dx_options_slide_pk_{{slide.sid}}').val()
+    slide_pk = chosen_diagnosis.split('_')[0]
+    dx_pk = chosen_diagnosis.split('_')[1]
+    dx_text = chosen_diagnosis.split('_')[2]
+    // console.log(chosen_diagnosis)
+    // console.log(    $('#diagnosis_div_'+slide_pk+'_'+dx_pk).length)
+    
+    if (chosen_diagnosis == 'none') {
+      console.log('NONE')
+    }
+    else if ($('#diagnosis_div_'+slide_pk+'_'+dx_pk).length>0 ){
+      console.log('diagnosis already added')
+    }
+    else {
+      console.log('adding diagnosis:'+chosen_diagnosis)
+      Diagnosis.addDiagnosisToSlideAJAX(slide_pk, dx_pk, dx_text)
+    }
+    
+  });
+
+  // function newSlideTissueDisplay(slide_pk, tissue) {
+  //   newP = 
+  // }
+
+  function newTissueDisplay(slide_sid, chosen_tissue_type, tissue) {
+    var newDisplay = `<p id="tissue_display_${slide_sid}" class="slide_tissue_type_${slide_sid}">`;
+    newDisplay += tissue;
+    console.log('tissue ' + tissue);
+    newDisplay += `<button id="delete_tissue_${slide_sid}" class="${slide_sid} btn p-0">`;
+    newDisplay += '<i class="bi-trash"></i></button>';
+    newDisplay += '</p>';
+    return newDisplay;
+  }
+
+  function addTissueToSlideAJAX(slide_sid, chosen_tissue_type, tissue) {
+    $.post("/add_tissue_type_to_slide/", {'slide_sid': slide_sid, 'key': chosen_tissue_type})
+    .done(function(response) {
+      console.log(tissue);
+      console.log(slide_sid);
+      console.log(chosen_tissue_type);
+      console.log('success ' +response);
+      console.log(slide_sid);
+
+      // $('#tissue_display_slide_'+slide_sid).remove();
+      // console.log('p has been hidden!');
+      $('#slide_tissue_'+slide_sid).replaceWith(newTissueDisplay(slide_sid, chosen_tissue_type, tissue));
+    });
+  }
+
+  $("#tt_form_slide_{{slide.sid}}").submit(function(e) {
+    e.preventDefault();
+    chosen_tissue_type = $("#tt_options_slide_{{slide.sid}}").val();
+    console.log(chosen_tissue_type);
+    console.log('adding tissue_type: ' + chosen_tissue_type);
+    var div = $(this).parent("div");
+    var sid = div.data("id");
+    console.log(sid);
+
+    var sel = document.getElementById('tt_options_slide_{{slide.sid}}');
+    var index = sel.selectedIndex;
+    console.log(index);
+    var tissue = sel.options[sel.selectedIndex].text;
+    // console.log(tissue.text);
+
+
+    addTissueToSlideAJAX(sid, chosen_tissue_type, tissue);
+
+
+
+  });
+
+  $(document).ready(function() {
+
+    $('#edit_slide_note_{{slide.sid}}').on("dblclick", function() {
+      var value = $(this).text().trim();
+      console.log(value);
+      var data_type = $(this).data("type");
+      console.log(data_type)
+      var input_type = "text";
+      var input = "<input type='"+input_type+"' id='edit_slide_note_{{slide.sid}}' class='input-data form-control' value='"+value+"'>";
+      console.log(input)
+      $(this).html(input);
+      $(this).removeClass("editnote");
+    });
+
+    $(document).on("blur", ".input-data", function() {
+      var value = $(this).val();
+      console.log(value);
+      var div = $(this).parent("div");
+      div.html(value);
+      div.addClass("editnote");
+      var type = div.data("type");
+      console.log('type = ' +type);
+      var span = $(this).parent("span");
+      $(this).remove();
+      div.html(value);
+
+      saveSlideNote(div.data("id"), value, type);
+    });
+
+    $(document).on("keypress", ".input-data", function(e) {
+      var key = e.which;
+      if(key == 13) {
+        var value = $(this).val();
+        console.log(value);
+        var div = $(this).parent("div");
+        console.log('this is div:' +div.html(value))
+        div.html(value);
+        div.addClass("editnote");
+        var type = div.data("type");
+        console.log(type);
+
+        saveSlideNote(div.data("id"), value, type);
+      }
+    });
+
+    function saveSlideNote(sid, value, type) {
+      console.log(sid);
+      console.log(value);
+      console.log(type);
+
+      $.post("/add_note_to_slide/", {'slide_sid': sid, 'value': value, 'type': type})
+      .done(function(response) {
+        console.log(response);
+      })
+      .fail(function(response) {
+        console.log("error!!");
+      });
+
+    }
+
+  });
+
+
+</script>

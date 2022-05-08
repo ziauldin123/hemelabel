@@ -1,0 +1,70 @@
+<!doctype html>
+{% load static %}
+<head>
+	<title>{% block title %}Hemepath{% endblock %}</title>
+
+	<link rel="shortcut icon" type="image/png" href="{% static 'labeller/images/favicon.ico' %}"/>
+
+  <link rel="stylesheet" href="{% static 'labeller/jquery-ui-1.12.1.custom/jquery-ui.min.css' %}">
+  <script src="{% static 'labeller/jquery-3.5.1.min.js' %}"></script>
+  <script src="{% static 'labeller/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+
+  <script src="{% static 'labeller/ajax_setup.js' %}"></script>
+
+  <link rel="stylesheet" type="text/css" href="{% static 'labeller/bootstrap-5.0.2-dist/css/bootstrap.min.css' %}">
+  <script src="{% static 'labeller/bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js' %}"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+
+  <link rel="stylesheet" type="text/css" href="{% static 'labeller/style.css' %}">
+  {% block head %} {% endblock head %}
+
+</head>
+
+<body>
+<h1> HemeLabel: Hematopoietic Cell Labeller </h1>
+
+<ul class="row_menu">
+	<li><a href="{% url 'labeller:index' %}">Home</a></li>
+
+  {% if user.is_authenticated %}
+  <script>console.log("User is:", '{{user}}')</script>
+
+    <li><a href="{% url 'labeller:diagnoses' %}">Diagnoses</a></li>
+    <li><a href="{% url 'labeller:slides' %}">Slides</a></li>
+    <li><a href="{% url 'labeller:regions' %}">Regions</a></li>
+    <li><a href="{% url 'labeller:projects' %}">Projects</a></li>
+
+
+    <li><a href="{% url 'labeller:logout' %}?next={% url 'labeller:index' %}">Logout</a></li>
+
+  {% else %}
+  
+    <li><a href="{% url 'labeller:login' %}?next={% url 'labeller:index' %}">Login</a></li>
+    <li><a href="{% url 'labeller:register' %}">Sign Up</a></li>
+  
+  {% endif %}
+</ul>
+
+{% block content %} {% endblock content %}
+
+</body>
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <p>Copyright &copy; Gregory M. Goldgof</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <a href="#" class="text-dark">Terms of Use</a> 
+                <span class="text-muted mx-2">|</span> 
+                <a href="#" class="text-dark">Privacy Policy</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+{% block scripts %} {% endblock scripts %}
+
+
+

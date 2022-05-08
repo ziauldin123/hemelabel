@@ -1,0 +1,27 @@
+{% load static %}
+
+{% if user.is_authenticated %}
+{{slide.sid}}
+   <div id="slide_{{slide.sid}}_note_form" class="container-fluid mt-2 form-group">
+
+        <div class="form-group">
+            <form method="POST" action="{% url 'labeller:add_note_to_slide' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button id="add_note_to_slide_{{slide.sid}}_submit" class="btn btn-slide-info" style="font-size:1rem; padding:.2rem 0.5rem 0.1rem .5rem !important">
+                    Add note
+                </button>
+            </form>
+        </div>
+
+    </div> 
+
+    <script>
+        var slide_sid = "{{ slide.sid }}";
+        console.log(slide_sid);
+        document.getElementById("note_sid").value = slide_sid;
+    </script>
+
+{% else %}
+    <p>You do not have access to this page.</p>
+{% endif %}

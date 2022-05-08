@@ -1,0 +1,167 @@
+{% extends "labeller/base.html" %}
+{% load static %}
+
+
+
+{% block content %}
+
+
+<script src="{% static 'labeller/Cell.js' %}"></script>
+<script src="{% static 'labeller/CellCounter.js' %}"></script>
+<script src="{% static 'labeller/CellSummary.js' %}"></script>
+<script src="{% static 'labeller/Slide.js' %}"></script>
+
+<script src="{% static 'labeller/dropzone-5.7.0/dist/dropzone.js' %}"></script>
+
+
+<!-- <link rel="stylesheet" type="text/css" href="{% static 'labeller/style.css' %}"> -->
+<link rel="stylesheet" href="{% static 'labeller/dropzone-5.7.0/dist/dropzone.css' %}">
+
+<script>
+  
+  
+  // My own Dropzone //
+  Dropzone.options.mySlideDropzone = {
+    
+    paramName: function() {
+      return "file";
+    },
+
+    autoProcessQueue: false,
+    maxFilesize: 1000,
+    parallelUploads: 100,
+    uploadMultiple: true,
+    timeout: 100000,
+    dictDefaultMessage: "Drop slides here to upload",
+
+    init: function() {
+      var submitButton = document.querySelector("#upload-btn");
+      var mySlideDropzone = this;
+
+      submitButton.addEventListener("click", function() {
+        mySlideDropzone.processQueue();
+      });
+
+      mySlideDropzone.on("complete", function(file) {
+        mySlideDropzone.removeFile(file);
+
+      });
+
+      mySlideDropzone.on("success", function(file, serverResponse) {
+        console.log('entering mydropzone.on("success")');
+        if (serverResponse['success']) {
+          var slides_json = serverResponse['slides_json'];
+          console.log(slides_json);
+          var slides = $.parseJSON(slides_json.replace(/&quot;/ig,'"'));
+          console.log(slides);
+          if (slides.length > 0) {
+            $('#no_slide').remove();
+          }
+
+          for (var i=0; i<slides.length; i++) {
+            console.log(slides[i]);
+            console.log(slide.fields.name);
+            var slide = slides[i];
+            $('#slides').append(getULForSlide(slide.pk, slide.fields.sid, slide.fields.name));
+            $('#bigtable_'+slide.fields.sid).hide();
+            infoButtonOnClick(slide.fields.sid);
+          }
+        }
+      });
+    }
+  };
+</script>
+
+<h2>Slides</h2>
+
+<div id="slide_dz_div">
+  <form action="dropzone_slide" id="my-slide-dropzone" method="POST" enctype="multipart/form-data" class="dropzone js-reference-dropzone">
+    {% csrf_token %}
+  </form>
+
+  <br>
+
+  <button id="upload-btn" type="button">Add Slides</button>
+</div>
+
+<div id="slides"></div>
+
+<script>
+
+  $(document).ready(function() {
+
+    {% for slide in slides %}
+
+      $('#slides').append(Slide.getULForSlide({{slide.pk}}, '{{slide.sid}}', '{{slide.name}}'));
+      Slide.infoButtonOnClick('{{slide.sid}}');
+
+    {% empty %}
+
+      <p id="no_slide">No Slides</p>
+
+    {% endfor %}
+
+    $('.bigtable').hide();
+        
+  });
+
+</script>
+      
+
+{% endblock content %}
+
+
+
+<!-- 
+function createBigTable(sid) {
+
+    var table = '<table style="border:none" class="slide_page_table" id="classification_table classification_table_' +sid+'">';
+      table += '<tr class="class_table_row">';
+      table += '<th class="class_table_td">Neutrophilic';
+      table += '<th class="class_table_td">Other granulocytic';
+      table += '<th class="class_table_td">Lymphoid';
+      table += '<th class="class_table_td">Erythroid';
+      table += '<th class="class_table_td">Misc';
+      table += '<tr class="class_table_row">';
+      table += '<td class="class_table_td slide count_M1 '+sid+'">Blast (1):';
+      table += '<td class="class_table_td slide count_E1 '+sid+'">Immature Eo (q):';
+      table += '<td class="class_table_td slide count_L0 '+sid+'">Lymphobast (a):';
+      table += '<td class="class_table_td slide count_ER1 '+sid+'">Pronormoblast (z):';         
+      table += '<td class="class_table_td slide count_U1 '+sid+'">Artifact (7):';
+      table += '<tr class="class_table_row">';
+      table += '<td class="class_table_td slide count_M2 '+sid+'">Promyelocyte (2):';
+      table += '<td class="class_table_td slide count_E2 '+sid+'">Eosinophil (w):';
+      table += '<td class="class_table_td slide count_L1 '+sid+'">Hematogone (s):';
+      table += '<td class="class_table_td slide count_ER2 '+sid+'">Basophilic normoblast (x):';           
+      table += '<td class="class_table_td slide count_U2 '+sid+'">Unknown (8):';
+      table += '<tr class="class_table_row">';
+      table += '<td class="class_table_td slide count_M3 '+sid+'">Myelocyte (3):';
+      table += '<td class="class_table_td slide count_B1 '+sid+'">Immature Baso (e):';
+      table += '<td class="class_table_td slide count_L2 '+sid+'">Mature Lymphocyte (d):';
+      table += '<td class="class_table_td slide count_ER3 '+sid+'">Polychromatophilic (c):';            
+      table += '<td class="class_table_td slide count_U3 '+sid+'">Other (9):';
+      table += '<tr class="class_table_row">';
+      table += '<td class="class_table_td slide count_M4 '+sid+'">Metamyelocyte (4):';
+      table += '<td class="class_table_td slide count_B2 '+sid+'">Basophil (r):';
+      table += '<td class="class_table_td slide count_L3 '+sid+'">LGL (f):';
+      table += '<td class="class_table_td slide count_ER4 '+sid+'">Orthochromic/nuc red (v):';            
+      table += '<td class="class_table_td slide count_U4 '+sid+'">Histiocyte (0):';
+      table += '<tr class="class_table_row">';
+      table += '<td class="class_table_td slide count_M5 '+sid+'">Band (5):';
+      table += '<td class="class_table_td slide count_MO1 '+sid+'">Monoblast (t):';
+      table += '<td class="class_table_td slide count_L4 '+sid+'">Plasma cell (g):';
+      table += '<td class="class_table_td slide count_ER5 '+sid+'">Reticulocyte (b):';          
+      table += '<td class="class_table_td slide count_UL '+sid+'">Unlabelled (u):';         
+      table += '<tr class="class_table_row">';
+      table += '<td class="class_table_td slide count_M6 '+sid+'">Seg (6):';
+      table += '<td class="class_table_td slide count_MO2 '+sid+'">Monocyte (y):';
+      table += '<td class="class_table_td">';
+      table += '<td class="class_table_td slide count_ER6 '+sid+'">Mature RBC (n):';
+      table += '<td class="class_table_td">';
+      table += '</table>';
+
+    return table;
+
+
+  };
+ -->

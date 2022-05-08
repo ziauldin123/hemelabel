@@ -1,0 +1,33 @@
+{% extends "labeller/base.html" %}
+
+
+{% block content %}
+
+<!-- <div class="horizontal_flex">
+{% include "labeller/partials/mini_counter.html" %}
+{% include "labeller/partials/region_counter.html" %}
+</div>
+ -->
+{% include "labeller/partials/big_table.html" %}
+
+{% include "labeller/partials/main_lineages_horizontal.html" %}
+
+
+{% endblock content %}
+
+{% block scripts %} 
+{% load static %}
+<script src="{% static 'labeller/Cell.js' %}"></script>
+<script src="{% static 'labeller/CellCounter.js' %}"></script>
+
+<script type="text/javascript">
+	var cells_json = '{{cells_json}}';
+	console.log(cells_json);
+	var static_image_path = "{% static 'labeller/images/' %}";
+	console.log("static", static_image_path);
+</script>
+
+<!-- <script src="{% static 'labeller/partials/main_lineages_horizontal.js' %}"></script>
+<script src="{% static 'labeller/partials/large_cell_table.js' %}"></script> -->
+
+{% endblock scripts %}

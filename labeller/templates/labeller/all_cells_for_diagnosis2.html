@@ -1,0 +1,64 @@
+{% extends 'labeller/base2.html' %}
+{% load static %}
+
+{% block title %}All Cells for Diagnoses{% endblock %}
+
+<script>
+
+</script>
+
+{% block content %}
+
+<script src="{% static 'labeller/Cell.js' %}"></script>
+<script src="{% static 'labeller/CellCounter.js' %}"></script>
+{% comment %} <script src="{% static 'labeller/Slide.js' %}"></script> {% endcomment %}
+<!-- <script src="{% static 'labeller/pagination.min.js' %}"></script> -->
+<!-- <div id="demo_container"></div>
+<div id="demo"></div> -->
+
+<script>
+// $('#demo').pagination({
+//         dataSource: 'https://api.flickr.com/services/feeds/photos_public.gne?tags=cat&tagmode=any&format=json&jsoncallback=?',
+//         locator: 'items',
+//         totalNumber: 120,
+//         pageSize: 20,
+//         ajax: {
+//             beforeSend: function() {
+//                 $('#demo_container').html('Loading data from flickr.com ...');
+//             }
+//         },
+//         callback: function(data, pagination) {
+//             // template method of yourself
+//             var html = template(data);
+//             $('#demo_container').html(html);
+//         }
+//     })
+</script>
+
+<h2>All Cells for Diagnosis: {{diagnosis.name}}</h2>
+
+<!-- Cell Summary -->
+<div class="container-fluid justify-content-center slide_box">
+  <div class="container-fluid m-2 py-4">
+    {% include "labeller/partials/cell_summary2.html" %}
+    <script>$('#slide_info_diagnosis_pk_{{diagnosis.pk}}').text('Open cell summary for all slides with {{diagnosis.name}}')</script>
+  </div>
+</div>
+
+<script src="{% static 'labeller/Diagnosis.js' %}"></script>
+
+
+<!-- Cells -->
+<!-- <h2>Cells ({{cells|length}})</h2> -->
+{%   include "labeller/partials/main_lineages_horizontal_ajax.html" %}
+</div>
+<script>
+$(document).ready(function() {
+	console.log('diagnosis.html: ready')
+ 	Cell.addCellLabelKeyboardEventListeners();
+});
+</script>
+
+
+
+{% endblock %}

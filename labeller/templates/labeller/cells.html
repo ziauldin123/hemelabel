@@ -1,0 +1,85 @@
+{% extends "labeller/base.html" %}
+
+
+{% block content %}
+
+<script>
+
+	function getULForCells(id, cid, img_path) {
+		console.log("entering getULForCells");
+		console.log(id);
+		console.log(cid);
+		console.log(img_path);
+
+		var ul = '<div class="cells_list_div">';
+		ul += '<ul id="cell_list_' +cid+ '" class="cells_list">';
+		ul += '<li id="cell_' +id+ '" class="cell_id">ID: ' +id+ '</li>';
+		ul += '<li id="cell_' +cid+ '" class="cell_cid">CID: ' +cid+ '</li>';
+		ul += '</ul>';
+		ul += '<ul id="cell_' +cid+ '_link_list" class="cell_link_list">';
+		ul += '<li id="cell_' +cid+ '_link" class="cell_link">';
+		ul += '<img class="cell_thumb" src="' +img_path+ '"></li></ul></div>';
+
+		return ul;
+		
+		}
+</script>
+
+	<h2>Cells</h2>
+	
+	
+
+
+	<div id="cells_list"></div>
+	
+	<!-- <p>
+	<u1>
+		{% for cell in cells %}
+
+
+			<p> 
+				ID: {{cell.id}} &nbsp &nbsp &nbsp &nbsp
+				CID: {{cell.cid}} &nbsp &nbsp &nbsp &nbsp  
+
+				<img src="{{cell.image.url}}" >
+				
+			</p>			
+
+
+		{% empty %}
+			<li>No cells have been added yet</li>
+		{% endfor %}
+
+	</u1></p> -->
+
+<script>
+	$(document).ready(function() {
+		console.log('they ready');
+		if ('{{ cells_json }}' != 'none') {
+			var cells_json = '{{ cells_json }}';
+			var cells_json_reformat = $.parseJSON(cells_json.replace(/&quot;/ig, '"'));
+			console.log(cells_json_reformat);
+
+			for (var i=0; i<cells_json_reformat.length; i++) {
+				console.log(cells_json_reformat[i]);
+				var cell = cells_json_reformat[i];
+				console.log(cell);
+				var id = cell.pk;
+				console.log(id);
+				var cid = cell.fields.cid;
+				console.log(cid);
+				var img_path = cell.fields.image;
+				if (img_path[0] != '/') {
+					img_path = '/' + img_path;
+				}
+				console.log(img_path);
+				$('#cells_list').append(getULForCells(id, cid, img_path));
+
+			};
+		};
+	});
+</script>
+
+
+
+{% endblock content %}

@@ -1,0 +1,73 @@
+{% extends "labeller/base2.html" %}
+{% load static %}
+{% block content %}
+<!--- Image Slider -->
+<div id="slides" class="carousel slide" data-ride="carousel">
+	<ul class="carousel-indicators">
+		<li data-target="#slides" data-slide-to="0" class="active"></li>
+		<li data-target="#slides" data-slide-to="1"></li>
+		<li data-target="#slides" data-slide-to="2"></li>
+	</ul>
+	<div class="carousel-inner">
+		<div class="carousel-item active">
+			<img src="{% static 'labeller/images/jumbo_circles.png' %}">
+			<div class="carousel-caption">
+				<h1 class="display-2">HemeLabel</h1>
+				<h3>Hematopoietic Cell Labeller</h3>
+				<!-- <button type="button" class="btn btn-outline-light btn-lg">View Demo</button>
+				<button type="button" class="btn btn-primary btn-lg">Get Started</button> -->
+			</div>
+		</div>
+		<div class="carousel-item">
+			<img src="{% static 'labeller/images/jumbo_squares.png' %}">
+			<div class="carousel-caption">
+				<h1 class="display-2">HemeLabel</h1>
+				<h3>Hematopoietic Cell Labeller</h3>
+				<!-- <button type="button" class="btn btn-outline-light btn-lg">View Demo</button>
+				<button type="button" class="btn btn-primary btn-lg">Get Started</button> -->
+			</div>
+
+		</div>
+		<div class="carousel-item">
+			<img src="{% static 'labeller/images/jumbo_rows.png' %}">
+			<div class="carousel-caption" >
+				<!-- <h1 class="display-2" style="background-color:rgb(52, 58, 64, 0.3);">HemeLabel</h1> -->
+				<h1 class="display-2" style="background-color:rgb(75,0,130, 0.3);">HemeLabel</h1>
+				<h3 style="background-color:rgb(75,0,130, 0.3);">Hematopoietic Cell Labeller</h3>
+				<!-- <button type="button" class="btn btn-outline-light btn-lg">View Demo</button>
+				<button type="button" class="btn btn-primary btn-lg">Get Started</button> -->
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<!--- Jumbotron -->
+<div class="container-fluid">
+	<div class="row jumbotron">
+		<!-- <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10"> -->
+		<div class="col-xl-12">
+			<p class="lead text-center m-0">Designed to enable pathologists and laboratory scientists to rapidly label cells from bone marrow aspirates, 
+				peripheral blood smears for AI applications.
+			</p>
+		</div>
+		<!-- <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-2">
+			<a href="#">
+				<button type="button" class="btn btn-outline-secondary btn-lg">Web Hosting</button>
+			</a>
+		</div> -->
+	</div>
+</div>
+
+<!--- Fixed background -->
+<figure>
+	<div class="fixed-wrap">
+		<div id="fixed" style="background-image: url({% static 'labeller/images/20211118235952_BandW.jpg' %});">
+
+		</div>
+	</div>
+</figure>
+
+
+
+{% endblock content %}

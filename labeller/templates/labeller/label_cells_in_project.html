@@ -1,0 +1,147 @@
+{% extends 'labeller/base.html' %}
+{% load static %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<script src="{% static 'labeller/Cell.js' %}"></script>
+<script src="{% static 'labeller/CellCounter.js' %}"></script>
+<script src="{% static 'labeller/dropzone-5.7.0/dist/dropzone.js' %}"></script>
+
+<link rel="stylesheet" href="{% static 'labeller/dropzone-5.7.0/dist/dropzone.css' %}">
+
+<script>
+   // My own Dropzone //
+    Dropzone.options.myDropzone = {
+      paramName: function(){
+        return "file";
+      },
+      autoProcessQueue: false,
+      maxFilesize: 1000,
+      parallelUploads: 100,
+      uploadMultiple: true,
+
+      init: function() {
+        var submitButton = document.querySelector("#upload-btn");
+        var myDropzone = this;
+
+        submitButton.addEventListener("click", function() {
+          myDropzone.processQueue();
+        });
+
+        myDropzone.on("complete", function(file) {
+          myDropzone.removeFile(file);
+          // CellCounter.updateCountsOnPageAJAXProject(project_id);
+        });
+
+        myDropzone.on("successmultiple", function(file, serverResponse) {
+          console.log('entering mydropzone.on("successmultiple")');
+          // console.log(file)
+          // console.log(serverResponse)
+          success = serverResponse['success']
+          cells_json = serverResponse['cells_json']
+          // console.log(success)
+          // console.log(cells_json)
+          HorizontalCellList.populateCellLists(cells_json);
+          CellCounter.updateCountsOnPageWrapper();
+          // this.createThumbnailFromUrl(file, serverResponse.imageUrl);
+        });
+
+      }
+    };
+
+
+</script>
+
+
+  <h2>Cell Labeler</h2>
+
+  <div id='labeller'>
+    <div id="current_cell_popout" >
+      <h3 id='current_cell_title'>Current Cell</h2>
+    </div>
+
+    <div>
+      {% include "labeller/partials/export_project_data.html" %}
+    </div>
+  </div>
+
+  <div>
+
+    <form action="dropzone_image_w_projectID" id="my-dropzone" method="POST" enctype="multipart/form-data" class="dropzone js-reference-dropzone">
+      {% csrf_token %}
+      <label for="cell_type">Cell Type:</label>
+      <select name="cell_type" id="cell_type">
+          <option value="UL">Unlabelled</option>
+
+        <optgroup label="Neutrophilic Myeloid">
+          <option value="M1">Blast</option>
+          <option value="M2">Promyelocyte</option>
+          <option value="M3">Myelocyte</option>
+          <option value="M4">Metamyelocyte</option>
+          <option value="M5">Band Neutrophil</option>
+          <option value="M6">Segmented Neutrophil</option>
+        </optgroup>
+        <optgroup label="Other Myeloid">
+          <option value="E1">Immature Eosinophil</option>
+          <option value="E2">Mature Eosinophil</opton>
+          <option value="B1">Mast Cell</option>
+          <option value="B2">Mature Basophil</option>
+          <option value="MO1">Monoblast</option>
+          <option value="MO2">Monocyte</option>
+        </optgroup>
+        <optgroup label="Lymphoid">
+          <option value="L0">Lymphoblast</option>
+          <option value="L1">Hematogone</option>
+          <option value="L2">Small Mature Lymphocyte</option>
+          <option value="L3">Large Grancular Lymphocyte</option>
+          <option value="L4">Plasma Cell</option>
+        </optgroup>
+        <optgroup label="Erythroid">
+          <option value="ER1">Pronormoblast</option>
+          <option value="ER2">Basophilic Normoblast</option>
+          <option value="ER3">Polychormatophilic</option>
+          <option value="ER4">Orthochromic (nuc red)</option>
+          <option value="ER5">Reticulocyte</option>
+          <option value="ER6">Mature RBC</option>
+        </optgroup>
+        <optgroup label="Other">
+          <option value="U1">Artifact</option>
+          <option value="U2">Unknown</option>
+          <option value="U3">Other</option>
+          <option value="U4">Histiocyte</option>
+        </optgroup>
+      </select>
+  
+    </form>
+    <br>
+
+    <button id="upload-btn" type="button">Add Cells</button>
+
+  </div>
+  <br>
+  
+  <!-- <div class="cells_list_of_current_project"> -->
+  <!-- </div> -->
+
+
+  {% include "labeller/partials/main_lineages_horizontal.html" %}
+
+<script>
+  console.log('test')
+  $ (document).ready(function() {
+    console.log('ready');
+    console.log('{{project.id}}');
+    var project_id = '{{project.id}}';
+    
+    if ('{{cells_json}}'!='none') {		
+  //    var cells_json = '{{cells_json}}';
+  //    var all_cells = Cell.LoadCellsFromJson(cells_json);
+  //		console.log(all_cells)
+        CellCounter.updateCountsOnPageWrapper();
+    }
+    
+  });
+</script>
+
+{% endblock %}

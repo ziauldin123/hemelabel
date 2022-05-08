@@ -1,0 +1,52 @@
+{% extends 'labeller/base.html' %}
+{% load static %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<script src="{% static 'labeller/Cell.js' %}"></script>
+<script src="{% static 'labeller/CellCounter.js' %}"></script>
+<script src="{% static 'labeller/CellSummary.js' %}"></script>
+<script src="{% static 'labeller/Slide.js' %}"></script>
+
+<H2>Project Info</H2>
+<!-- Cell Summary -->
+{% include "labeller/partials/cell_summary.html" %}
+
+<H2>Slides ({{project.slides.all|length}})</H2>
+<div id='slides'></div>
+{% for slide in project.slides.all %}
+  <script>
+    $('#slides').append(Slide.getULForSlide({{slide.pk}}, '{{slide.sid}}', '{{slide.name}}'));
+    Slide.infoButtonOnClick('{{slide.sid}}');
+  </script>
+{% empty %}
+<p id="no_slide">No Slides</p>
+{% endfor %}
+<script>$('.bigtable').hide();</script>
+
+<H2>Users ({{project.users.all|length}})</H2>
+{% for user in project.users.all %}
+  {{user}}
+{% empty %}
+<p id="no_users">No Users</p>
+{% endfor %}
+
+<H2>Regions ({{regions|length}})</H2>
+{% for slide in project.slides.all %}
+  {% for region in slide.region_set.all %}
+    {{region}}
+  {% endfor %}
+{% empty %}
+<p id="no_users">No Regions</p>
+{% endfor %}
+
+
+<H2>Cells ({{cells|length}})</H2>
+<div class="mb-5"></div>
+{% include "labeller/partials/main_lineages_horizontal.html" %}
+</div>
+
+
+
+{% endblock content %}

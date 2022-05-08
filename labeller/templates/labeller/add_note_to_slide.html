@@ -1,0 +1,38 @@
+{% extends 'labeller/base2.html' %}
+{% load static %}
+
+{% block title %} Add Note {% endblock title %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+
+   <div id="div_notes_form_{{slide.sid}}" class="mt-2 form-group">
+
+        <form method="POST" id="add_note_to_slide_{{slide.sid}}_form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button id="add_note_to_slide_{{slide.sid}}_submit" class="btn btn-slide-info" style="font-size:1rem; padding:.2rem 0.5rem 0.1rem .5rem !important">
+                Add note
+            </button>
+        </form>
+       <!-- <form action="#" id="form_slide_notes_{{slide.sid}}" class="notes_form">
+            <input type="text">
+            <button name="action" value="add note" class="btn btn-slide-info"        style="font-size:1rem; padding:.2rem 0.5rem 0.1rem .5rem !important">Add note
+            </button>
+       </form> -->
+   </div> 
+
+   <script>
+       
+   </script>
+
+{% else %}
+
+   You do note have access to this page.
+
+{% endif %}
+
+
+
+{% endblock content %}

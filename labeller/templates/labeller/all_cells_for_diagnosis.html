@@ -1,0 +1,41 @@
+{% extends 'labeller/base2.html' %}
+{% load static %}
+
+{% block title %}All Cells for Diagnoses{% endblock %}
+
+<script>
+
+</script>
+
+{% block content %}
+
+<script src="{% static 'labeller/Cell.js' %}"></script>
+<script src="{% static 'labeller/CellCounter.js' %}"></script>
+{% comment %} <script src="{% static 'labeller/Slide.js' %}"></script> {% endcomment %}
+
+
+<h2>All Cells for Diagnosis: {{diagnosis.name}}</h2>
+
+<!-- Cell Summary -->
+<div class="container-fluid justify-content-center slide_box mt-3 mb-3">
+  <div class="container-fluid p-4">
+    {% include "labeller/partials/cell_summary2.html" %}
+    <script>$('#slide_info_diagnosis_pk_{{diagnosis.pk}}').text('Open cell summary for all slides with {{diagnosis.name}}')</script>
+  </div>
+</div>
+
+<script src="{% static 'labeller/Diagnosis.js' %}"></script>
+
+
+<!-- Cells -->
+<h2>Cells ({{cells|length}})</h2>
+{%   include "labeller/partials/main_lineages_horizontal.html" %}
+</div>
+<script>
+$(document).ready(function() {
+	console.log('diagnosis.html: ready')
+ 	Cell.addCellLabelKeyboardEventListeners();
+});
+</script>
+
+{% endblock %}

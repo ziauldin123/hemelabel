@@ -1,0 +1,23 @@
+
+<button class='export_button' id='{{ project.id }}'>Export project</button>
+
+
+<script>
+
+  $('.export_button').click(function(){
+      console.log($(this).attr('id'));
+      var project_id = $(this).attr('id');
+      $.get("/export_project_data/", {'project_id':project_id}, function(json){
+
+        console.log('button_export_handler callback');
+
+        console.log(json['filename']);
+
+        window.location.href = json['filename']
+
+      });
+
+  });
+  
+
+</script>

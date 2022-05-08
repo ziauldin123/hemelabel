@@ -1,0 +1,27 @@
+<h2>Regions {{ user.username }} | {{ regions|length }}</h2>
+
+<div id="regions" class="container-fluid">
+
+
+
+      {% for region in regions %}
+
+        {% if user.is_authenticated %}
+        {% if user.id == region.created_by.id %} 
+
+          <script>
+            region = new Region("{{region.rid}}", "{{region.image.url}}");
+            region.prependRegionDivToJQuerySelector("#regions");
+          </script>
+
+        {% endif %}
+        {% endif %}
+
+      {% empty %}
+        <li id="no_regions_added_li">No regions have been added yet</li>
+      {% endfor %}
+
+
+
+
+</div>

@@ -1,0 +1,79 @@
+{% extends "labeller/base2.html" %}
+
+{% block content %}
+
+<script>
+
+	function getULForRegion(id, rid, img_path) {
+
+		console.log('entering getULForRegion');
+		console.log(id);
+		console.log(rid);
+		console.log(img_path);
+		region_path = '/label_region_fabric/'+rid+'/';
+		var ul = '<div class="regions_list_div">';
+		ul += '<ul id="region_list_' +rid+ '" class="regions_list">';
+		ul += '<li id="region_' +id+ '" class="region_id"><b>ID: </b>' +id+ '</li>';
+		ul += '<li id="region_' +rid+ '" class="region_rid"><b>RID: </b>' +rid+ '</li>';
+		ul += '<li><button id="delete_region_button_'+this.rid+'" class="btn btn-slide-info delete_region_button rid=' +this.rid+' ">Delete</button></li>';
+		ul += '</ul>';
+		ul += '<ul id="region_' +rid+ '_link_list" class="region_link_list">';
+		ul += '<li id="region_' +rid+ '_link" clas="region_link mb-2" style="margin-bottom: 1rem;">';
+		ul += '<a href="' +region_path+ '">';
+		ul += '<img class="region_thumb" src="' +img_path+ '"></a></li>';
+
+
+
+		ul += '</ul></div>';
+
+		return ul;
+	};
+
+
+
+
+</script>
+
+	<h2>Regions ({{regions|length}})</h2>
+
+		<div id="regions_list">
+
+
+		</div>
+
+
+
+<script>
+
+	$(document).ready(function() {
+		console.log('document ready');
+		if ('{{ regions_json }}' != 'none') {
+			var regions_json = '{{regions_json}}';
+			var regions_json_reformat = $.parseJSON(regions_json.replace(/&quot;/ig, '"'));
+			console.log(regions_json_reformat);
+
+			for (var i = 0; i < regions_json_reformat.length; i++) {
+				console.log(regions_json_reformat[i]);
+				var region = regions_json_reformat[i];
+				console.log(region);
+				var id = region.pk;
+				console.log(id);
+				var rid = region.fields.rid;
+				console.log(rid);
+				img_path = region.fields.image;
+				if (img_path[0] != '/') {
+					img_path = '/' + img_path;
+				}
+				console.log(img_path);
+				$('#regions_list').append(getULForRegion(id, rid, img_path));
+	
+			};
+			
+		};
+
+	});
+</script>
+
+
+
+{% endblock content %}

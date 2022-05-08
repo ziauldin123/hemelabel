@@ -1,0 +1,142 @@
+{% extends "labeller/base2.html" %}
+{% load static %}
+
+
+
+{% block content %}
+
+
+<script src="{% static 'labeller/Cell.js' %}"></script>
+<script src="{% static 'labeller/CellCounter.js' %}"></script>
+<script src="{% static 'labeller/CellSummary.js' %}"></script>
+<script src="{% static 'labeller/Slide.js' %}"></script>
+
+<script src="{% static 'labeller/dropzone-5.7.0/dist/dropzone.js' %}"></script>
+
+
+<!-- <link rel="stylesheet" type="text/css" href="{% static 'labeller/style.css' %}"> -->
+<link rel="stylesheet" href="{% static 'labeller/dropzone-5.7.0/dist/dropzone.css' %}">
+
+<script>
+  
+  
+  // My own Dropzone //
+  Dropzone.options.mySlideDropzone = {
+    
+    paramName: function() {
+      return "file";
+    },
+
+    autoProcessQueue: false,
+    maxFilesize: 1000,
+    parallelUploads: 100,
+    uploadMultiple: true,
+    timeout: 100000,
+    dictDefaultMessage: "Drop slides here to upload",
+
+    init: function() {
+      var submitButton = document.querySelector("#upload-btn");
+      var mySlideDropzone = this;
+
+      submitButton.addEventListener("click", function() {
+        mySlideDropzone.processQueue();
+      });
+
+      mySlideDropzone.on("complete", function(file) {
+        mySlideDropzone.removeFile(file);
+
+      });
+
+      mySlideDropzone.on("success", function(file, serverResponse) {
+        console.log('entering mydropzone.on("success")');
+        if (serverResponse['success']) {
+          var slides_json = serverResponse['slides_json'];
+          console.log(slides_json);
+          var slides = $.parseJSON(slides_json.replace(/&quot;/ig,'"'));
+          console.log(slides);
+          if (slides.length > 0) {
+            $('#no_slide').remove();
+          }
+
+          for (var i=0; i<slides.length; i++) {
+            console.log(slides[i]);
+            console.log(slide.fields.name);
+            var slide = slides[i];
+            $('#slides').append(getULForSlide(slide.pk, slide.fields.sid, slide.fields.name));
+            $('#bigtable_'+slide.fields.sid).hide();
+            infoButtonOnClick(slide.fields.sid);
+          }
+        }
+      });
+    }
+  };
+</script>
+
+<h2>Slides ({{slides|length}})</h2>
+
+<!-- Slide Uploader (Dropzone) -->
+<div class="container-fluid justify-content-center dropzone_box">
+
+  <h3 style="border-bottom: 0px">Slide Uploader </h3>
+
+  <!-- <div id="slide_dz_div"> -->
+  <form action="dropzone_slide" id="my-slide-dropzone" method="POST" enctype="multipart/form-data" class="dropzone js-reference-dropzone">
+    {% csrf_token %}
+  </form>
+    <!-- <hr style="width: 50%;"> -->
+  
+  <div class="d-flex flex-row-reverse pt-1 pb-2">
+    <button id="upload-btn" type="button" class="btn upload-btn p-2">Add Slides</button>
+  </div>
+</div>
+
+<script src="{% static 'labeller/Diagnosis.js' %}"></script>
+<!-- Slides -->
+{% for slide in slides %}
+  {% if user.is_authenticated %}
+  {% if user.id == slide.created_by.id %}
+
+
+    <div class="container-fluid slide_box" style="padding-right: 5px  !important; padding-left: 5px !important;">
+      <div class="container-fluid my-3 pt-2 pb-3 mx-0">
+        <!-- Slide Info -->
+        {% include "labeller/partials/slide_diagnoses.html" %}
+
+        <!-- Cell Summary -->
+        <div class="bigtable-box container-fluid">
+          <div class="row">
+            <div class="px-2" id='slide_cellSummary_sid_{{slide.sid}}'></div>
+          </div>
+        </div>
+        
+        <script>
+            var cellSummary = new CellSummary('sid', {{slide.sid}});
+            $('#slide_cellSummary_sid_{{slide.sid}}').append(cellSummary.getNewULForSlide());
+            cellSummary.addInfoButtonOnClick();
+            $('#bigtable_sid_{{slide.sid}}').hide()
+        </script>
+
+
+
+      </div>
+    </div>
+
+  {% endif %}
+  {% endif %}
+
+
+{% empty %}
+  <div class="container-fluid justify-content-center">
+    <h3 style="border-bottom: 0px">No Slides</h3>
+  </div>  
+{% endfor %}
+
+
+
+<script>
+
+  
+
+</script>
+{% endblock content %}
+

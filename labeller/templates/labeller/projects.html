@@ -1,0 +1,147 @@
+{% extends 'labeller/base2.html' %}
+{% load static %}
+
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+<script src="{% static 'labeller/Cell.js' %}"></script>
+<script src="{% static 'labeller/CellCounter.js' %}"></script>
+<script src="{% static 'labeller/dropzone-5.7.0/dist/dropzone.js' %}"></script>
+
+<link rel="stylesheet" href="{% static 'labeller/dropzone-5.7.0/dist/dropzone.css' %}">
+
+<script>
+
+  function getULForProject(name, pid) {
+    console.log(name, pid);
+
+    console.log("you are in getULForProject")
+
+    // project_path = '/label_cells_in_project/'+pid+'/';
+    project_path = '/project/'+pid+'/';
+
+    var ul = '<ul id="project_list_'+ pid + '" class="project_list project_list_box">';
+    ul += '<li class="project_name"><a class="project_link" href="'+project_path+'">'+name+'</a></li>';
+    ul += '<li class="project_id_' + pid + '">Poject ID: ' + pid + '</li>';
+    // ul += '<li class="print_total_cells"><button id="total_cells_' + pid + '" class="total_cells_in_project">Total No. Cells</button></li>';
+    ul += '<li id="total_num_cells_'+pid+'"></li></ul>';
+
+    return ul;
+    
+  };
+  // My own Dropzone
+
+  Dropzone.options.mySlideDropzone = {
+    paramName: function() {
+      return "file";
+    },
+
+    autoProcessQueue: false,
+    maxFilesize: 1000,
+    parallelUploads: 100,
+    uploadMultiple: true,
+    timeout: 100000,
+
+    init: function() {
+      var submitButton = document.querySelector("#upload-btn");
+      var mySlideDropzone = this;
+
+      submitButton.addEventListener("click", function() {
+        mySlideDropzone.processQueue();
+      });
+
+      mySlideDropzone.on("complete", function(file) {
+        mySlideDropzone.removeFile(file);
+      });
+
+      mySlideDropzone.on("success", function(file, serverResponse) {
+        console.log('entering mydropzone.on("success")');
+        if (serverResponse['success']) {
+          var projects_json = serverResponse['projects_json'];
+          console.log(projects_json);
+          var projects = $.parseJSON(projects_json);
+          console.log(projects);
+          if (projects.length > 0) {
+            $('#no_projects').remove();
+          }
+
+          for (var i=0; i<projects.length; i++) {
+            console.log(projects[i]);
+            var project = slides[i];
+            $('#projects').append(getULForProject(project.name, project.id));
+          }
+        }
+        // success = serverResponse['success'];
+      });
+    }
+  };
+
+</script>
+
+  <h2>{{ user.get_username }}'s Projects</h2>
+
+  <p>
+    <form action='/create_project' method="POST" class="new_project">
+      {% csrf_token %}
+      New Project: <input type="text" name="project" required />
+      <button id="create_project_button" class="btn upload-btn">Create</button>
+    </form>
+  </p>
+
+  <br>
+
+  <div id="projects">
+
+      {% for project in projects %}
+
+      <script>
+        console.log("{{ project.name }}");
+        $('#projects').append(getULForProject("{{project.name}} | {{project.created_by}}", {{project.id}}))
+      </script>
+
+      {% empty %}
+        <p id="no_projects">No projects have been added yet.</p>
+      {% endfor %}
+
+  </div>
+
+  <script>
+
+    
+
+  </script>
+
+
+<script>
+  
+  $(document).ready(function(){
+    // if ('{{projects_json}}'!='none') {
+    //   var projects_json = '{{projects_json}}';
+    //   var projects = $.parseJSON(projects_json.replace(/&quot;/ig,'"'));
+    //   for (var i=0; i<projects.length; i++) {
+    //     $('#projects').append(getULForProject(projects[i].fields['name'], projects[i].pk))
+    //   }
+
+    //   console.log(projects)
+    // }
+
+
+    $('.total_cells_in_project').on('click', function() {
+      console.log("Hello from the on CLICK");
+      console.log(this);
+      console.log($(this).attr('id'));
+      var pid = $(this).attr('id').slice('total_cells_'.length);
+      console.log(pid);
+
+      $.get('/get_all_cells_in_project/', {'project_id': pid}, function(json) {
+        console.log('entering get_all_cells_in_project');
+        console.log(json);
+        var all_cells_in_project = json['cell_count'];
+        console.log(all_cells_in_project);
+        $('#total_num_cells_'+pid).html('Num Cells: ' + all_cells_in_project);
+      });
+    });
+  });
+
+</script>
+{% endblock %}

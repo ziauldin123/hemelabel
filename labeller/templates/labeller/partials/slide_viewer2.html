@@ -1,0 +1,151 @@
+{% load static %}
+<div id="openseadragon_slideViewer" style="width: 100%; height: 700px;"></div>
+<script src="{% static 'labeller/openseadragon/openseadragon.min.js' %}"></script>
+
+<div class='d-flex justify-content-center align-items-center p-2'>
+  <div>
+    {% include "labeller/partials/image_control_bars.html" %}
+  </div>
+  <div>
+    <button id="add_new_region_button" class="btn px-1"><i class="bi-crop mx-2"></i>Crop New Region<span class="px-1"></span></button>
+  </div>
+</div>
+ 
+
+<script type="text/javascript">
+
+
+
+
+//https://openseadragon.github.io/docs/OpenSeadragon.html#.Options
+var viewer = OpenSeadragon({
+    id: "openseadragon_slideViewer",
+    showNavigator:  true,
+    debugMode: false,
+    visibilityRatio: 1.0,
+    // pixelsPerWheelLine: 80, //Default = 40
+    // pixelsPerArrowPress: 80, //Default = 40
+    zoomPerScroll: 1.5, // Default 1.2
+    springStiffness: 9, //Default 6.5
+    prefixUrl: "{% static 'labeller/openseadragon/images/' %}",
+    tileSources: '/{{ slide.dzi_path }}',
+
+});
+
+var drag;
+var selectionMode = false;
+var number_of_overlay_boxes = 0;
+
+new OpenSeadragon.MouseTracker({
+    element: viewer.element,
+    
+    pressHandler: function(event) {
+      console.log('Presss handler')
+      if (!selectionMode) {
+        return;
+      }
+      
+	  number_of_overlay_boxes++;
+      var overlayElement = document.createElement('div');
+      overlayElement.id = 'box' + String(number_of_overlay_boxes+1)
+      overlayElement.class = "box_selection"
+      overlayElement.style.border = "4px solid red"
+      var viewportPos = viewer.viewport.pointFromPixel(event.position);
+      viewer.addOverlay(overlayElement, new OpenSeadragon.Rect(viewportPos.x, viewportPos.y, 0, 0));
+      
+      imagePointPos = viewer.viewport.viewportToImageCoordinates(viewportPos);
+  
+      drag = {
+        overlayElement: overlayElement, 
+        startPos: viewportPos,
+        startPosImagePoint: imagePointPos,
+        endPosImagePoint: imagePointPos,
+      };
+    },
+
+    dragHandler: function(event) {
+      if (!drag) {
+        return;
+      }
+  
+      var viewportPos = viewer.viewport.pointFromPixel(event.position);
+      var diffX = viewportPos.x - drag.startPos.x;
+      var diffY = viewportPos.y - drag.startPos.y;
+  
+      var location = new OpenSeadragon.Rect(
+        Math.min(drag.startPos.x, drag.startPos.x + diffX), 
+        Math.min(drag.startPos.y, drag.startPos.y + diffY), 
+        Math.abs(diffX), 
+        Math.abs(diffY)
+      );
+  
+      viewer.updateOverlay(drag.overlayElement, location);
+      drag.endPosImagePoint = viewer.viewport.viewportToImageCoordinates(viewportPos);
+
+      var webPoint = event.position;
+      var viewportPoint = viewer.viewport.pointFromPixel(webPoint);
+      var imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
+
+      console.log(webPoint.toString(), viewportPoint.toString(), imagePoint.toString());
+    },
+
+
+
+  releaseHandler: function(event) {
+    var x1 = drag.startPosImagePoint.x;
+    var y1 = drag.startPosImagePoint.y;
+    var x2 = drag.endPosImagePoint.x;
+    var y2 = drag.endPosImagePoint.y;
+
+    Region.createNewRegionWithAJAXandAddItToRegionsElement('{{slide.sid}}', x1, y1, x2, y2);
+    
+	var height = drag.overlayElement.height;
+	drag = null;
+	selectionMode = false;
+	viewer.setMouseNavEnabled(true);
+  }
+
+});
+
+if (document.getElementById('add_new_region_button')!=null) {
+  document.getElementById('add_new_region_button').addEventListener('click', function() {
+    selectionMode = true;
+    console.log('button pressed');
+    viewer.setMouseNavEnabled(false);
+  });
+}
+
+</script>
+
+
+<script>
+// Notes on OpenSeaDragon
+// https://codepen.io/iangilman/pen/qBdabGM
+// https://stackoverflow.com/questions/36006823/openseadragon-selection information on how to return info from selection
+
+
+// Description of coordinate system
+    // https://openseadragon.github.io/examples/viewport-coordinates/
+
+
+    // var viewportPos = viewer.viewport.pointFromPixel(event.position);
+
+    // // The canvas-click event gives us a position in web coordinates.
+   //    var webPoint = event.position;
+   //    console.log(webPoint)
+
+   //    webPoint.x = x;
+   //    webPoint.y = y;
+   //    console.log(webPoint)
+
+   //    // Convert that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
+   //    var viewportPoint = viewer.viewport.pointFromPixel(webPoint);
+
+   //    // Convert from viewport coordinates to image coordinates.
+   //    var imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
+
+   //    // Show the results.
+   //    console.log(webPoint.toString(), viewportPoint.toString(), imagePoint.toString());
+
+    //   console.log(viewer.getOverlayById("box1"))
+</script>

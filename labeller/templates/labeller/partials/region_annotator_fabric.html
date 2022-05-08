@@ -1,0 +1,804 @@
+
+<div id="{{region.rid}}" class="region_container container-fluid p-0" style="width:{{region.floor_width}}px; display:flex; flex-direction: column;">
+	<div id="region_container_fabric" style="height:{{region.floor_height}}px; width:{{region.floor_width}}px">
+		<div id='region_canvas_container' style="position:relative">
+		<!-- <canvas id="region_canvas_original" style="position:absolute"></canvas> -->
+			<img id="region_canvas_original" class="region region_image canvas" id="r{{region.rid}}" style="position: relative" src="{{region.image.url}}">
+			</img>
+		</div>
+		<canvas id="fabric_canvas" style="position:absolute"></canvas>
+	</div>
+</div>
+<!-- 	<div id="region_container_original" style="height:{{region.floor_height}}px; width:{{region.floor_width}}px">
+		<canvas id="region_canvas_original" style="position:relative"></canvas>
+	</div>
+ -->	
+<!--  	<button id="fabric_add_square_button">Add cell (m)</button> -->
+	<!-- <button id="delete_cell_button">Delete cell (\)</button>
+	<button id="toggle_annotation_mode">Toggle annotation mode (Escape Key)</button> -->
+<!-- 	<button id="toggle_circles_button">Toggle annotation mode (,)</button>
+ --><!-- 	<button id="toggle_squares_button">Toggle squares (.)</button> -->
+<div class="container-fluid">
+	<div class="d-flex row">
+	<div class="col p-2 justify-content-start">
+		<div class="d-flex flex-nowrap">
+			<div><span class="dot_legend" style="background-color: yellow; border: solid 5px yellow;"></div> <div class="pl-2 dot_legend_text">  Current Cell</div>
+		</div>
+		<div class="d-flex flex-nowrap">
+			<div><span class="dot_legend" style="background-color: red; border: solid 5px red;"></div> <div class="pl-2 dot_legend_text">  Unlabelled Cell</div>
+		</div>
+		<div class="d-flex flex-nowrap">
+			<div><span class="dot_legend" style="background-color: cyan; border: solid 5px cyan;"></div> <div class="pl-2 dot_legend_text">  Labelled Cell</div>
+		</div>
+		</div>
+	<div class="col p-2 justify-content-around"  >
+		<button id="delete_cell_button" class="btn p-0" ><i class="bi-trash"></i> Delete cell (\)</button><br>
+		<button id="toggle_annotation_mode" class="btn p-0"><i class="bi-circle-square"></i> Toggle annotation mode (Esc)</button>
+	</div>
+	<div class="col p-2 justify-content-around" >
+		<div class='form-check form-check-inline p-0'>
+			<input type="checkbox" id="region_complete_classif" name="region_complete_classif" value="region_complete_classif"  class="form-check-input">
+			<label for="region_complete_classif" class="form-check-label">Classification Complete</label><br>
+		</div>
+		<br>
+		<div class='form-check form-check-inline p-0' >
+			<input type="checkbox" id="region_complete_seg" name="region_complete_seg" value="region_complete_seg" class="form-check-input">
+			<label for="region_complete_seg" class="form-check-label">Segmentation complete</label>
+		</div>
+	</div>
+	<div class="col p-2 justify-content-left" >
+		{% include "labeller/partials/image_control_bars.html" %}
+	</div>
+	</div>
+</div>
+
+
+<!-- <div class='row align-middle' >
+	<div class='col' >
+		<button id="delete_cell_button" class="btn" ><i class="bi-trash"></i> Delete cell (\)</button><br>
+		<button id="toggle_annotation_mode" class="btn "><i class="bi-subtract"></i> Toggle annotation mode (Escape Key)</button>
+	</div>
+	<div class='col-md' >
+		<div class='form-check form-check-inline'>
+			<input type="checkbox" id="region_complete_seg" name="region_complete_seg" value="region_complete_seg" class="form-check-input">
+			<label for="region_complete_seg" class="form-check-label">Mark region complete: segmentation</label>
+		</div>
+		<br>
+		<div class='form-check form-check-inline'>
+			<input type="checkbox" id="region_complete_classif" name="region_complete_classif" value="region_complete_classif"  class="form-check-input">
+			<label for="region_complete_classif" class="form-check-label">Mark region complete: classification</label><br>
+		</div>
+	</div>
+
+	<div class='col'>
+
+	</div>
+</div>
+</div> -->
+
+	 <!-- Pre bootstrap code -->
+	<!-- <table>
+		<tr>
+			<td>
+				<input type="checkbox" id="region_complete_seg" name="region_complete_seg" value="region_complete_seg">
+				<label for="region_complete_seg">Mark region complete: segmentation</label>
+				<br>
+			</td>
+		</tr><tr>
+			<td>
+				<input type="checkbox" id="region_complete_classif" name="region_complete_classif" value="region_complete_classif">
+				<label for="region_complete_classif">Mark region complete: classification</label><br>
+			</td>
+		</tr>
+	</table> -->
+	
+
+<!-- 	<button id="test_button">Test Button</button> -->
+
+{% load static %}
+
+<script src="{% static 'labeller/fabric.min.js' %}"></script>
+
+<script>
+var toggleStatus = true;
+//Adapted from https://www.w3schools.com/howto/howto_js_draggable.asp
+
+
+// function dragElement(elmnt) {
+// 	console.log('dragElement', elmnt)
+// 	var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+// 	elmnt.onmousedown = dragMouseDown;
+
+// 	function dragMouseDown(e) {
+// 		e = e || window.event;
+// 		e.preventDefault();
+// 		// get the mouse cursor position at startup:
+// 		pos3 = e.clientX;
+// 		pos4 = e.clientY;
+// 		document.onmouseup = closeDragElement;
+// 		// call a function whenever the cursor moves:
+// 		document.onmousemove = elementDrag;
+// 	}
+
+// 	function elementDrag(e) {
+// 		e = e || window.event;
+// 		e.preventDefault();
+// 		// calculate the new cursor position:
+// 		pos1 = pos3 - e.clientX;
+// 		pos2 = pos4 - e.clientY;
+// 		pos3 = e.clientX;
+// 		pos4 = e.clientY;
+// 		// set the element's new position:
+// 		elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+// 		elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+// 	}
+
+// 	function closeDragElement() {
+// 		/* stop moving when mouse button is released:*/
+// 		document.onmouseup = null;
+// 		document.onmousemove = null;
+// 	}
+// }
+
+var counter = 0;
+
+class RegionLabellerFabric {
+	
+	static getRegionIDForPage(){
+		if ($('.region_container').length < 1) {
+			console.log("RegionLabellerFabric:getRegionIDForPage() - No region id found")
+			return -1;
+		}
+		else {
+			var rid = $('.region_container').attr('id');
+			console.log('rid =', rid);
+			return rid;
+		}
+	}
+
+	static returnObjectToOlDCoordinates(canvas, obj) {
+		canvas.remove(obj);
+
+		$.get("/get_cell_json/", {'cid':obj.name}, function(json){
+			console.log("Was successful?: " + json['success']);	
+			if (json['success'] == false) {
+				console.log("Error in returnObjectToOlDCoordinates");	
+			}
+
+			else if(json['success'] == true) {
+				var cell = JSON.parse(json['cell_json'])[0];
+				cell = new Cell(cell);
+				RegionLabellerFabric.addBoundingBoxFromCell(canvas, cell);
+			}
+		});
+	}
+
+	static updateCellLocation (cid, top, left, height, width, canvas){
+//		console.log('updating cell location', obj);
+		$.post("/change_cell_location/", {'cid':cid, 'top':top, 'left':left, 'height':height, 'width':width}, function(json){
+
+				if (json['success'] == false) {
+					console.log("Error in updateCellLocation");	
+				}
+				else if(json['success'] == true) {
+					var cell = JSON.parse(json['cell_json'])[0];
+					// var all_cells = Cell.LoadCellsFromJson(json['cells_json']);
+					cell = new Cell(cell);
+					console.log("cell is", cell);
+					Cell.updateCellAfterLocationChange(cell);  //updates cell images in preview and horizontal bar
+					RegionLabellerFabric.selectBoxAsActiveFromCID (cid)
+					canvas.remove(canvas.getActiveObject());
+					RegionLabellerFabric.updateCircle(cell, canvas);
+					Cell.selectCellByCID(cell.getCID())
+					RegionLabellerFabric.addBoundingBoxFromCell(canvas, cell);
+					RegionLabellerFabric.selectBoxAsActiveFromCID(cell.getCID());
+				}
+		});
+		
+	}
+
+	static setupNormalCanvas (){
+		$('#region_canvas_container').addClass('hidden')
+		// $('#region_canvas_container').hide();
+		// var canvas = new fabric.Canvas('fabric_canvas');
+		
+		// var canvas = new fabric.Canvas('region_canvas_original');
+
+
+	 //    var canvasHeight = {{region.floor_height}};
+	 //    var canvasWidth = {{region.floor_width}};
+	 //    canvas.setBackgroundImage("{{region.image.url}}", canvas.renderAll.bind(canvas), {
+		//     // should the image be resized to fit the container?
+		//     backgroundImageStretch: false
+		// });
+
+	 //    canvas.setHeight(canvasHeight);
+	 //    canvas.setWidth(canvasWidth);
+	
+	}
+
+
+	static setupCanvas () {
+		
+		var canvas = new fabric.Canvas('fabric_canvas');
+		var canvasHeight = {{region.floor_height}};
+		var canvasWidth = {{region.floor_width}};
+		canvas.setBackgroundImage("{{region.image.url}}", canvas.renderAll.bind(canvas), {
+			// should the image be resized to fit the container?
+			backgroundImageStretch: false
+		});
+
+		canvas.setHeight(canvasHeight);
+		canvas.setWidth(canvasWidth);
+
+		RegionLabellerFabric.addEventListeners (canvas);
+
+
+
+		canvas.on('object:modified', function (e) {
+			var obj = e.target;
+			console.log('action', e.action, e.transform.scaleX, e.transform.scaleY);
+			if (e.action == 'scaleY'){
+				console.log('scalingY');
+			}
+			if (e.action == 'scaleX') {
+				console.log('scalingX')
+			}
+
+			console.log('object modified', e, obj.name);
+
+			console.log(e.transform);
+			// let obj = options.target;
+			var boundingRect = obj.getBoundingRect(true);
+			if (boundingRect.left < 0
+				|| boundingRect.top < 0
+				|| boundingRect.left + boundingRect.width > this.getWidth()
+				|| boundingRect.top + boundingRect.height > this.getHeight()) {
+				// obj.left = e.transform.lastX;
+				// obj.top = e.transform.lastY;
+
+				RegionLabellerFabric.returnObjectToOlDCoordinates(canvas, obj);
+				// obj.left = 150;
+				// obj.top = 100;
+
+				// obj.left = obj._stateProperties.left;
+				// obj.angle = obj._stateProperties.angle;
+				// obj.scaleX = obj._stateProperties.scaleX;
+				// obj.scaleY = obj._stateProperties.scaleY;
+				// obj.setCoords();
+				// obj.saveState();
+			}
+			else {
+				RegionLabellerFabric.updateCellLocation(obj.name, obj.top, obj.left, obj.height*obj.scaleY, obj.width*obj.scaleX, canvas);
+
+				//RegionLabellerFabric.updateCellLocation(obj);
+			}
+
+
+		});
+
+		fabric.Canvas.prototype.getItemByName = function(name) {
+			var object = null,
+			objects = this.getObjects();
+
+			for (var i = 0, len = this.size(); i < len; i++) {
+				if (objects[i].name && objects[i].name === name) {
+					object = objects[i];
+					break;
+				}
+			}
+			return object;
+		};
+
+		return canvas;
+	}
+
+
+	// static dragCell(elmnt, cell, canvas) {
+	// 	var cid = cell.getCID();
+	// 	Cell.highlightCircle(cid);
+	// 	console.log('dragElement', elmnt)
+	// 	var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+	// 	elmnt.onmousedown = dragMouseDown
+
+	// 	function dragMouseDown(e, cell, canvas) {
+	// 		console.log('dragmousedown')
+	// 		e = e || window.event;
+	// 		e.preventDefault();
+	// 		// get the mouse cursor position at startup:
+	// 		pos3 = e.clientX;
+	// 		pos4 = e.clientY;
+	// 		document.onmouseup = closeDragElement;
+	// 		// call a function whenever the cursor moves:
+	// 		document.onmousemove = elementDrag;
+	// 	}
+
+	// 	function elementDrag(e) {
+	// 		e = e || window.event;
+	// 		e.preventDefault();
+	// 		// calculate the new cursor position:
+	// 		pos1 = pos3 - e.clientX;
+	// 		pos2 = pos4 - e.clientY;
+	// 		pos3 = e.clientX;
+	// 		pos4 = e.clientY;
+	// 		// set the element's new position:
+	// 		elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+	// 		elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+	// 	}
+
+	// 	function closeDragElement(e) {
+			
+
+	// 	// 	static addNewCellFromImageClick(image_canvas, canvas, e) {
+	// 	// 	var BB=image_canvas.getBoundingClientRect();
+	// 	// 	var X_center=e.clientX-BB.left;
+	// 	// 	var Y_center=e.clientY-BB.top;
+	// 	// 	var width = RegionLabellerFabric.default_box_width_height;
+	// 	// 	var height = RegionLabellerFabric.default_box_width_height;
+	// 	// 	console.log(X_center,Y_center,width,height )
+	// 	// 	RegionLabellerFabric.createCellInDatabase(canvas, X_center-width/2, Y_center-height/2, width, height);
+	// 	// }
+
+	// 		var BB = canvas.getBoundingClientRect();
+	// 		var X_center=e.clientX-BB.left;
+	// 		var Y_center=e.clientY-BB.top;
+	// 		var box_left = X_center - cell.width/2
+	// 		var box_top = Y_center - cell.height/2;
+	// 		console.log('closedragelement', X_center,Y_center, cell)
+	// 		RegionLabellerFabric.updateCellLocation(cid, box_top, box_left, cell.height, cell.width, canvas);
+	// 		//RegionLabellerFabric.addBoundingBoxFromCell(canvas, cell);
+
+	// 		/* stop moving when mouse button is released:*/
+	// 		document.onmouseup = null;
+	// 		document.onmousemove = null;
+	// 	}
+	// }
+
+	static drawBoundingBox(canvas, left, top, width, height, name) {
+		var rect = new fabric.Rect({
+			left: left,
+			top: top,
+			strokeWidth: 3,
+			fill: 'transparent',
+			stroke: 'red',
+			lockRotation: true,
+			width: width,
+			height: height,
+		});
+		rect.name=name;
+		rect.id=name;
+//		console.log('creating bounding box', rect.name, rect);
+		canvas.add(rect);
+
+		rect.on('mousedown', function(e) {
+			console.log('rect event', e, e.target);
+			console.log('rectangle selected', e.target.name);
+			Cell.selectCellByCID(e.target.name);
+		});
+	}
+
+	static addBoundingBoxFromCell(canvas, cell){
+		RegionLabellerFabric.drawBoundingBox(canvas, cell.getLeft(), cell.getTop(),cell.getWidth(), cell.getHeight(), cell.getCID()); 
+		RegionLabellerFabric.selectBoxAsActiveFromCID (cell.getCID())
+
+	}
+
+
+
+	static createCellInDatabase(canvas, left, top, width, height){
+		var rid = RegionLabellerFabric.getRegionIDForPage();
+		$.post("/add_new_cell_box/", {'rid':rid, 'top':top, 'left':left, 'height':height, 'width':width}, function(json){
+			console.log("Was successful?: " + json['success']);	
+			if (json['success'] == false) {
+				console.log("Error description: " + json['error']);	
+				alert("Error description: " + json['error']);
+			}
+
+			else if(json['success'] == true) {
+				var cell = JSON.parse(json['new_cell_json'])[0];
+				// var all_cells = Cell.LoadCellsFromJson(json['cells_json']);
+				cell = new Cell(cell);
+				var new_cell_div = cell.getDivForCellList();
+        		$('#UL_cells_inline').prepend($(new_cell_div).clone());
+        
+        		//$(new_cell_div).addClass('clicked_cell');
+				$('#unlabelled_cells_inline').prepend(new_cell_div);
+				
+				$('.cell_list_item.'+cell.cid).on('click', function (){
+					HorizontalCellList.cellListItemClickHandler($(this))
+				});        
+
+				Cell.selectCellByCID(cell.getCID())
+				RegionLabellerFabric.addBoundingBoxFromCell(canvas, cell);
+				RegionLabellerFabric.selectBoxAsActiveFromCID(cell.getCID());
+				RegionLabellerFabric.addNewCircle(cell, canvas);
+		        CellCounter.updateCountsOnPageWrapper();
+		        Cell.UpdateHorizontalCellCounts();
+		        $('.clicked_cell').removeClass('clicked_cell');
+		        $('#unlabelled_cells_inline').children().first().addClass('clicked_cell');
+        		//CellCounter.updateCountsOnPageAJAX(rid);
+				//RegionLabellerFabric.drawBoundingBox(canvas, left, top, width, height, cell.getCID());
+			}
+		});
+	}
+
+	static addNewCellFromImageClick(image_canvas, canvas, e) {
+		var BB=image_canvas.getBoundingClientRect();
+		var X_center=e.clientX-BB.left;
+		var Y_center=e.clientY-BB.top;
+		var width = RegionLabellerFabric.default_box_width_height;
+		var height = RegionLabellerFabric.default_box_width_height;
+		console.log(X_center,Y_center,width,height )
+		RegionLabellerFabric.createCellInDatabase(canvas, X_center-width/2, Y_center-height/2, width, height);
+	}
+
+	static default_box_width_height=100;
+
+	static drawNewBoundingBox(canvas){
+		var left = 150; 
+		var top = 100;
+		var width = 50; 
+		var height = 50;
+		var rid = RegionLabellerFabric.getRegionIDForPage();
+		RegionLabellerFabric.createCellInDatabase(canvas, left, top, width, height);
+		//var cell = RegionLabellerFabric.createCellInDatabase(canvas, rid, left, top, width, height);
+
+		// console.log('drawNewBoundingBox', cell);
+		// RegionLabellerFabric.drawBoundingBox(canvas, left, top, width, height, cell.getCID());
+	}
+
+	static removeSelectedBox(canvas){
+		console.log('removing rectangle', canvas.getActiveObject().name, canvas.getActiveObject());
+		var cid = canvas.getActiveObject().name
+		canvas.remove(canvas.getActiveObject());
+		Cell.deleteCellByCID(cid);
+		console.log('removeSelectedBox new cid', Cell.currentCellCID())
+		RegionLabellerFabric.selectBoxAsActiveFromCID(Cell.currentCellCID());
+		//var nextCellCID = HorizontalCellList.nextCell(1);
+		console.log('removeSelectedBox')
+		
+		{% comment %} if (nextCellCID!=false) {
+
+			Cell.selectCellByCID(nextCellCID);
+			RegionLabellerFabric.selectBoxAsActiveFromCID(nextCellCID);
+		} {% endcomment %}
+		{% comment %} $('.cell.'+cid).remove();
+		$('#centroid'+cid).remove(); {% endcomment %}
+		
+	}
+	
+	static toggleDots(){
+		var temp = $('.hidden_dot')
+		$('.dot').addClass('hidden_dot').removeClass('dot');
+		temp.removeClass('hidden_dot').addClass('dot');
+	}
+
+	static toggleCanvasModes(){
+		//console.log('toggleCanvasMode');
+		//console.log('hiding', $('#fabric_canvas'), $('#region_canvas_container'));
+		if($('#fabric_canvas').hasClass('hidden')){
+			if (toggleStatus == true) {
+				RegionLabellerFabric.toggleDots();
+				toggleStatus = false;
+			} else {
+				RegionLabellerFabric.toggleDots();
+				toggleStatus = true;
+				$('#fabric_canvas').removeClass('hidden');
+				// $('#fabric_canvas').hide();
+
+				$('.canvas-container').removeClass('hidden');
+				// $('.canvas-container').show();
+
+				$('#region_canvas_container').addClass('hidden');
+				// $('#region_canvas_container').hide();
+
+			}
+		}
+		else {
+			$('#fabric_canvas').addClass('hidden');
+			// $('#fabric_canvas').hide();
+			$('.canvas-container').addClass('hidden');
+			// $('.convas-container').hide();
+			$('#region_canvas_container').removeClass('hidden');
+			// $('#region_canvas_container').show();
+		};
+	}
+
+	
+
+	static toggleSquares(){
+		//console.log('hiding', $('#fabric_canvas'));
+		if($('#fabric_canvas').hasClass('hidden')){
+			$('#fabric_canvas').removeClass('hidden');
+			// $('#fabric_canvas').show();
+
+		}
+		else {$('#fabric_canvas').addClass('hidden')};
+		// else {$('#fabric_canvas').hide()};
+
+	}
+
+	static convertTextToBool(text){
+		//console.log("convertTextToBool", text, typeof(text));
+		if (text.toLowerCase() == 'true') {return true;}
+		if (text.toLowerCase() != 'false') {
+			console.log("error in convertTextToBool", text);
+		}
+		return false;
+	}
+
+	static toggleRegionCompleteSeg(){
+		var rid = RegionLabellerFabric.getRegionIDForPage();
+		var value = $('#region_complete_seg').prop('checked')
+		$.post("/toggle_region_complete_seg/", {'rid':rid, 'value':value}, function(json){
+			if(json['success'] == true) {
+				console.log("toggleRegionCompleteSeg update success");
+			} else {
+				console.log("Error in toggleRegionCompleteSeg", rid, value, json);	
+			}
+		});
+	}
+
+	static toggleRegionCompleteClass(){
+		var rid = RegionLabellerFabric.getRegionIDForPage();
+		var value = $('#region_complete_classif').prop('checked')
+		$.post("/toggle_region_complete_class/", {'rid':rid, 'value':value}, function(json){
+			if(json['success'] == true) {
+				console.log("toggleRegionCompleteSeg update success");
+			} else {
+				console.log("Error in toggleRegionCompleteSeg", rid, value, json);	
+			}
+		});
+	}
+
+
+	static addEventListeners (canvas) {
+		$('#region_complete_seg').prop('checked', 
+			RegionLabellerFabric.convertTextToBool('{{region.all_wc_located}}'));
+
+		$('#region_complete_seg').on('click', function(e) {
+			RegionLabellerFabric.toggleRegionCompleteSeg();
+		});	
+
+		$('#region_canvas_original').on('click', function(e) {
+			console.log("canvas image clicked", $(this), e, canvas)
+			RegionLabellerFabric.addNewCellFromImageClick(this, canvas, e)
+		});
+		
+
+		$('#region_complete_classif').prop('checked', 
+			RegionLabellerFabric.convertTextToBool('{{region.all_wc_classified}}'));
+		
+		$('#region_complete_classif').on('click', function(e) {
+			RegionLabellerFabric.toggleRegionCompleteClass();
+		});	
+
+		$('#fabric_add_square_button').on('click', function(e) {
+			RegionLabellerFabric.drawNewBoundingBox(canvas);
+		});
+
+		$('#delete_cell_button').on('click', function(e) {
+			RegionLabellerFabric.removeSelectedBox(canvas);
+		});
+
+		$('#toggle_circles_button').on('click', function(e) {
+			RegionLabellerFabric.toggleDots();
+		});
+
+		$('#toggle_annotation_mode').on('click', function(e) {
+			RegionLabellerFabric.toggleCanvasModes();
+		});
+
+		
+
+		$('#toggle_circles_button').on('click', function(e) {
+			RegionLabellerFabric.toggleSquares();
+		});
+
+		// $('#test_button').on('click', function(e) {
+		// 	RegionLabellerFabric.selectBoxAsActiveFromCID_CANVAS('2182021230439', canvas);
+	 // 	});
+
+
+		window.addEventListener('keydown', (e) => {
+			var code = e.code;
+			console.log('keydown',typeof code, code);
+			// if (code == 'KeyM') {
+			// 	RegionLabellerFabric.drawNewBoundingBox(canvas);
+			// }
+			if (code == 'Backslash') {
+				RegionLabellerFabric.removeSelectedBox(canvas);
+			}
+			if (code == 'Escape') {
+				//RegionLabellerFabric.toggleDots();
+				RegionLabellerFabric.toggleCanvasModes();
+			}
+			// if (code == 'Period') {
+			// 	//RegionLabellerFabric.toggleSquares();
+			// }
+			// if (code == 'KeyG') {
+			// 	// var rect = canvas.getItemByName('r0');
+			// 	// console.log('deleting', rect);
+			// 	// rect.delete();
+			// }
+		});
+	}
+
+
+	static updateCircle(cell, canvas) {
+		$("#centroid"+cell.getCID()).remove();
+		RegionLabellerFabric.addNewCircle(cell, canvas);
+		Cell.highlightCircle(cell.getCID());
+	}
+
+	static addNewCircle(cell) {
+		// var newDiv1 = '<span class="dot no_highlight_dot '+cell.cell_type+'" id="centroid'+cell.getCID()+ '" style=" display: inline-block; ';
+		if ($('.hidden_dot').length >0){
+			var newDiv1 = '<span class="hidden_dot no_highlight_dot '+cell.cell_type+'" id="centroid'+cell.getCID()+ '" style="';			
+		}
+		else {
+			var newDiv1 = '<span class="dot no_highlight_dot '+cell.cell_type+'" id="centroid'+cell.getCID()+ '" style="';
+		}
+
+		newDiv1 = newDiv1 + 'position: absolute; top: ' + (cell.y-7) +'px; left: ' + (cell.x-7) + 'px; z-index: 100">';		
+		newDiv1 = newDiv1 + '</span>';
+		//console.log("NewDiv1=", newDiv1, $(newDiv1));
+		//$( ".canvas-container" ).append ($(newDiv1));
+		$( "#region_canvas_container" ).append ($(newDiv1));
+		//region_container_fabric
+		
+		$("#centroid"+cell.getCID()).on('click', function() {
+			Cell.selectCellByCID(cell.getCID());
+			RegionLabellerFabric.selectBoxAsActiveFromCID(cell.getCID());
+
+		});
+		Cell.highlightCircle(cell.getCID());
+		// dragElement(document.getElementById("centroid"+cell.getCID()));
+		//RegionLabellerFabric.dragCell(document.getElementById("centroid"+cell.getCID()), cell);
+
+		var cid = cell.getCID();
+		$("#centroid"+cell.getCID()).mousedown(function(e) {
+			/* Act on the event */
+			e = e || window.event;
+			Cell.selectCellByCID(cid);
+			RegionLabellerFabric.selectBoxAsActiveFromCID(cid)
+			console.log('celldrag', this, event, cell, canvas);
+			e.preventDefault();
+			var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			var jq_obj = this;
+			var elmnt = this;
+			document.onmouseup = closeDragElement;
+			document.onmousemove = elementDrag;
+
+			// $(document).mousemove(function(e){
+			// 	e = e || window.event;
+			// 	e.preventDefault()
+			// 	pos1 = pos3 - e.clientX;
+			// 	pos2 = pos4 - e.clientY;
+			// 	pos3 = e.clientX;
+			// 	pos4 = e.clientY;
+			// 	// set the element's new position:
+			// 	jq_obj.style.top = (jq_obj.offsetTop - pos2) + "px";
+			// 	jq_obj.style.left = (jq_obj.offsetLeft - pos1) + "px";
+			// });
+
+			function elementDrag(e) {
+					e = e || window.event;
+					e.preventDefault();
+					// calculate the new cursor position:
+					pos1 = pos3 - e.clientX;
+					pos2 = pos4 - e.clientY;
+					pos3 = e.clientX;
+					pos4 = e.clientY;
+					// set the element's new position:
+					elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+					elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+			}
+
+			function closeDragElement(e) {
+				var BB = document.getElementById('region_canvas_original').getBoundingClientRect();
+				var X_center=e.clientX-BB.left;
+				var Y_center=e.clientY-BB.top;
+				var box_left = X_center - cell.width/2
+				var box_top = Y_center - cell.height/2;
+				console.log('closedragelement', X_center,Y_center, cell)
+				RegionLabellerFabric.updateCellLocation(cid, box_top, box_left, cell.height, cell.width, canvas);
+				//RegionLabellerFabric.addBoundingBoxFromCell(canvas, cell);
+
+				/* stop moving when mouse button is released:*/
+				document.onmouseup = null;
+				document.onmousemove = null;
+
+			}
+			// $(document).mouseup(function(e){
+			// 	e = e || window.event;
+			// 	RegionLabellerFabric.selectBoxAsActiveFromCID (cid)
+			// 	//canvas.remove(canvas.getActiveObject());
+			// 	//RegionLabellerFabric.addBoundingBoxFromCell(canvas, cell);
+
+			// 	/* stop moving when mouse button is released:*/
+			// 	$(document).mouseup = null;
+			// 	$(document).mousemove = null;
+			// });
+		});
+	}
+
+
+// 	function dragMouseDown(e) {
+// 		e = e || window.event;
+// 		e.preventDefault();
+// 		// get the mouse cursor position at startup:
+// 		pos3 = e.clientX;
+// 		pos4 = e.clientY;
+// 		document.onmouseup = closeDragElement;
+// 		// call a function whenever the cursor moves:
+// 		document.onmousemove = elementDrag;
+// 	}
+
+// 	function elementDrag(e) {
+// 		e = e || window.event;
+// 		e.preventDefault();
+// 		// calculate the new cursor position:
+// 		pos1 = pos3 - e.clientX;
+// 		pos2 = pos4 - e.clientY;
+// 		pos3 = e.clientX;
+// 		pos4 = e.clientY;
+// 		// set the element's new position:
+// 		elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+// 		elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+// 	}
+
+// 	function closeDragElement() {
+// 		/* stop moving when mouse button is released:*/
+// 		document.onmouseup = null;
+// 		document.onmousemove = null;
+
+
+	//This references a global variable canvas. If there is more than one canvas, it will not work
+	static selectBoxAsActiveFromCID (cid){
+		//console.log("selectBoxAsActiveFromCID canvas", canvas, cid);
+		var counter = 0;
+		var found = -1;
+		canvas.forEachObject(function(obj) {
+			if (obj.id == cid) {
+				found = counter
+				//console.log('found', found)
+			}
+			counter +=1;
+		});
+		if (found != -1) {
+//			console.log('setting new active object', found)
+			canvas.setActiveObject(canvas.item(found));
+			canvas.renderAll();
+		}
+	}
+
+}
+
+$ (document).ready(function() {
+	canvas = RegionLabellerFabric.setupCanvas();
+	normalCanvas = RegionLabellerFabric.setupNormalCanvas();
+
+	if ('{{cells_json}}'!='none') {
+		
+		console.log('region_annotator_fabric.html ready', '{{cells_json}}', '{{celltypes_json}}')		
+		var cells_json = '{{cells_json}}';
+		var cell_types = '{{celltypes_json}}';
+
+		var all_cells = Cell.LoadCellsFromJson(cells_json, cell_types);
+		console.log('all_cells', all_cells)
+		for (var key in all_cells) {
+			var cell = all_cells[key];
+			RegionLabellerFabric.addBoundingBoxFromCell(canvas, cell);
+			RegionLabellerFabric.addNewCircle(cell, canvas);
+		}
+    CellCounter.updateCountsOnPageWrapper();
+		//CellCounter.updateCountsOnPageAJAX('{{region.rid}}');
+	}
+	RegionLabellerFabric.toggleCanvasModes();
+});
+
+</script>
+

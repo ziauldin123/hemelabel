@@ -1,0 +1,140 @@
+{% extends "labeller/base2.html" %}
+{% load static %}
+
+{% block title %}Label Region{% endblock %}
+
+{% block content %}
+<script src="{% static 'labeller/Cell.js' %}"></script>
+<script src="{% static 'labeller/CellCounter.js' %}"></script>
+
+<h2>Select & Label Cells</h2>
+
+{% include "labeller/partials/help_display.html" %}
+
+<div id="current_cell_popout" >
+	<h3 id='current_cell_title'>Current Cell</h2>
+</div>
+
+<div class="mb-5 mt-3">
+{% include "labeller/partials/region_annotator_fabric.html" %}
+
+
+<!-- <div id="test_keyboard">Last Key Pressed: </div>  -->
+
+<div id="region_info_headline"></div>
+
+<script src="{% static 'labeller/Diagnosis.js' %}"></script>
+
+<div class="container-fluid slide_box pb-3">
+{% include "labeller/partials/slide_diagnoses.html" %}
+{% include "labeller/partials/cell_summary2.html" %}
+</div>
+
+<div class="mb-5"></div>
+{% include "labeller/partials/main_lineages_horizontal.html" %}
+</div>
+
+<script> 
+	// function getULForSlide(id, sid, slide_name) {
+
+	// 	slide_path = '/label_slide/'+sid+ '/';
+	// 	var ul = '<ul class="slide_list slide_list_box">';
+	// 	ul = ul + '<li ><b>Parent slide information</b></li>';
+	// 	ul = ul + '<li class="slide_id">ID: '+ id +'</li>';
+	// 	ul = ul + '<li class="slide_sid">SID: '+ sid +'</li>';
+	// 	ul = ul + '<li class="slide_name" id="slide_name_' +sid+ '">Name: ' +slide_name+ '</li>';
+	// 	ul = ul + '<li class="label_btn"><a class="slide_label_btn" href= "'+ slide_path+'">Go to slide</a></li>';
+	// 	ul = ul + '</ul>'
+	// 	return ul;
+	// };
+
+	
+
+	function getULForRegion(id, rid, x, y, width, height) {
+
+		x = x.substr(0, x.indexOf('.'));
+		y = y.substr(0, y.indexOf('.'));
+		width = width.substr(0, width.indexOf('.'));
+		height = height.substr(0, height.indexOf('.'));
+
+		var ul = '<ul class="py-3 justify-content-center region-info">';
+		ul = ul + '<li class="region-info-header"><b>Region Information:</b></li>';
+		ul = ul + '<li class="slide_id pl-2"> <b>ID: </b>'+ id +'</li>';
+		ul = ul + '<li class="slide_sid pl-2"> <b>RID: </b>'+ rid +'</li>';
+		ul = ul + '<li class="pl-2"> <b>x: </b>' +x+ '</li>';
+		ul = ul + '<li class="pl-2"> <b>y: </b>' +y+ '</li>';
+		ul = ul + '<li class="pl-2"> <b>width: </b>' +width+ '</li>';
+		ul = ul + '<li class="pl-2"> <b>height: </b>' +height+ '</li>';
+		ul = ul + '</ul>'
+		return ul;
+	};
+
+	$('#region_info_headline').append(getULForRegion('{{region.pk}}', '{{region.rid}}', '{{region.x}}', '{{region.y}}', '{{region.width}}', '{{region.height}}'));
+	// $('#slide_back_link').append(getULForSlide('{{slide.pk}}', '{{slide.sid}}', '{{slide.name}}'));
+</script>
+
+<script>
+
+	$(document).ready(function() {
+
+		console.log('label_region_fabric.html: ready');
+
+		// Make the DIV element draggable:
+		dragElement(document.getElementById("current_cell_popout"));
+
+		function dragElement(elmnt) {
+			var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+			if (document.getElementById(elmnt.id + "header")) {
+				// if present, the header is where you move the DIV from:
+				document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+			} else {
+				// otherwise, move the DIV from anywhere inside the DIV:
+				elmnt.onmousedown = dragMouseDown;
+			};
+
+			function dragMouseDown(e) {
+				e = e || window.event;
+				e.preventDefault();
+				// get the mouse cursor position at startup:
+				pos3 = e.clientX;
+				pos4 = e.clientY;
+				document.onmouseup = closeDragElement;
+				// call a function whenever the cursor moves:
+				document.onmousemove = elementDrag;
+			};
+
+			function elementDrag(e) {
+				e = e || window.event;
+				e.preventDefault();
+				// calculate the new cursor position:
+				pos1 = pos3 - e.clientX;
+				pos2 = pos4 - e.clientY;
+				pos3 = e.clientX;
+				pos4 = e.clientY;
+				// set the element's new position:
+				elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+				elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+			};
+
+			function closeDragElement() {
+				// stop moving when mouse button is released:
+				document.onmouseup = null;
+				document.onmousemove = null;
+			};
+		};
+
+		Cell.addCellLabelKeyboardEventListeners();
+		console.log('label_region_fabric.html: bp2')
+		{% if cells %}
+			Cell.selectCellByCID({{cells.last.cid}})
+			//console.log('bla', cells)
+		{% else %}
+			$('#current_cell_popout').hide();
+		{% endif %}
+		console.log('label_region_fabric.html: bp3')
+
+	});
+
+</script>
+
+{% endblock %}

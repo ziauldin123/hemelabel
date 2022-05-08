@@ -1,0 +1,100 @@
+{% extends 'labeller/base2.html' %}
+{% load static %}
+
+{% block title %}Diagnoses{% endblock %}
+
+<script>
+
+</script>
+
+{% block content %}
+
+<script src="{% static 'labeller/Cell.js' %}"></script>
+<script src="{% static 'labeller/CellCounter.js' %}"></script>
+<script src="{% static 'labeller/Slide.js' %}"></script>
+
+<h2>Diagnosis: {{diagnosis.name}}</h2>
+
+<!-- Cell Summary -->
+
+<div class="container-fluid justify-content-center slide_box mt-3 mb-3 p-4">
+  <div class="container-fluid m-2">
+    {% include "labeller/partials/cell_summary2.html" %}
+    <script>$('#slide_info_diagnosis_pk_{{diagnosis.pk}}').text('Open cell summary for all slides with {{diagnosis.name}}')</script>
+  </div>
+
+  <div class="container-fluid ml-4">
+    Go to Full Cell Reclassification Lists (may load slowly)<a href="/all_cells_for_diagnosis/{{diagnosis.pk}}/" class="btn btn-primary p-1"><i class="bi-arrow-right-circle-fill"></i></a> 
+    <script src="{% static 'labeller/Diagnosis.js' %}"></script>
+  </div>
+
+</div>
+
+
+
+<!-- Slides -->
+<h2>Slides ({{slides|length}})</h2>
+{% for slide in slides %}
+<div class="container-fluid slide_box" style="padding-right: 5px  !important; padding-left: 5px !important;">
+
+  <div class="container-fluid my-3 pt-2 pb-3 mx-0">
+    <!-- Slide Info -->
+    {% include "labeller/partials/slide_diagnoses.html" %}
+
+      <!-- Cell Summary -->
+    <div class="flex-row" id='slide_cellSummary_sid_{{slide.sid}}'></div>
+    <script>
+        var cellSummary = new CellSummary('sid', {{slide.sid}});
+        $('#slide_cellSummary_sid_{{slide.sid}}').append(cellSummary.getNewULForSlide());
+        cellSummary.addInfoButtonOnClick();
+        $('#bigtable_sid_{{slide.sid}}').hide()
+    </script>
+  </div>
+</div>
+
+<!-- <div class="container-fluid justify-content-center slide_box">
+  <div class="container-fluid m-2 py-4">
+    <div class='d-flex flex-row align-middle'>
+      <div class='p-2'>
+        ID: {{slide.id}}
+      </div>
+      <div class='p-2'>
+        SID: {{slide.sid}}
+      </div>
+      <div class='p-2'>
+        Name: {{slide.name}}
+      </div>
+      <a href="/label_slide/{{slide.sid}}/" class="slide_label_btn p-2">Label</a>
+    </div>
+
+    <div class="flex-row" id='slide_cellSummary_sid_{{slide.sid}}'></div>
+    
+    <script>
+        var cellSummary = new CellSummary('sid', {{slide.sid}});
+        $('#slide_cellSummary_sid_{{slide.sid}}').append(cellSummary.getNewULForSlide());
+        cellSummary.addInfoButtonOnClick();
+        $('#bigtable_sid_{{slide.sid}}').hide()
+    </script>
+  </div>
+</div> -->
+
+  {% empty %}
+  <div class="container-fluid justify-content-center">
+    <h3 style="border-bottom: 0px">No Slides</h3>
+  </div>
+  {% endfor %}
+
+{% comment %}
+<!-- Cells -->
+<h2>Cells ({{cells|length}})</h2>
+{%   include "labeller/partials/main_lineages_horizontal.html" %}
+</div>
+{% endcomment %}
+<script>
+$(document).ready(function() {
+	console.log('diagnosis.html: ready')
+ 	Cell.addCellLabelKeyboardEventListeners();
+});
+</script>
+
+{% endblock %}

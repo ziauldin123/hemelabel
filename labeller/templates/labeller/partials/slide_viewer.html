@@ -1,0 +1,243 @@
+{% load static %}
+<div id="openseadragon_slideViewer" style="width: 100%; height: 700px;"></div>
+<script src="{% static 'labeller/openseadragon/openseadragon.min.js' %}"></script>
+
+{% comment %}
+<script src="{% static 'labeller/openseadragon/openseadragon-fabricjs-overlay.js' %}"></script>
+<script src="{% static 'labeller/fabric.min.js' %}"></script>
+{% endcomment %}
+
+<div class='d-flex justify-content-center align-items-center p-2'>
+  <div>
+    {% include "labeller/partials/image_control_bars.html" %}
+  </div>
+  <div>
+    <button id="add_new_region_button" class="btn px-1"><i class="bi-crop mx-2"></i>Crop New Region<span class="px-1"></span></button>
+  </div>
+</div>
+ 
+
+<script type="text/javascript">
+
+
+
+
+//https://openseadragon.github.io/docs/OpenSeadragon.html#.Options
+var viewer = OpenSeadragon({
+    id: "openseadragon_slideViewer",
+    showNavigator:  true,
+    debugMode: false,
+    visibilityRatio: 1.0,
+    // pixelsPerWheelLine: 80, //Default = 40
+    // pixelsPerArrowPress: 80, //Default = 40
+    zoomPerScroll: 1.5, // Default 1.2
+    springStiffness: 9, //Default 6.5
+    prefixUrl: "{% static 'labeller/openseadragon/images/' %}",
+    tileSources: '/{{ slide.dzi_path }}',
+
+});
+console.log('viewer', viewer)
+
+var drag;
+var selectionMode = false;
+var number_of_overlay_boxes = 0;
+
+new OpenSeadragon.MouseTracker({
+    element: viewer.element,
+
+    // moveHandler: function(event) {
+    //   console.log(event.position)
+    // },
+    
+    pressHandler: function(event) {
+      console.log('Presss handler')
+      if (!selectionMode) {
+        return;
+      }
+      
+	    number_of_overlay_boxes++;
+      var overlayElement = document.createElement('div');
+      overlayElement.id = 'box' + String(number_of_overlay_boxes+1)
+      overlayElement.class = "box_selection"
+      overlayElement.style.border = "4px solid red"
+      var viewportPos = viewer.viewport.pointFromPixel(event.position);
+      viewer.addOverlay(overlayElement, new OpenSeadragon.Rect(viewportPos.x, viewportPos.y, 0, 0));
+      
+      imagePointPos = viewer.viewport.viewportToImageCoordinates(viewportPos);  
+      drag = {
+        overlayElement: overlayElement, 
+        startPos: viewportPos,
+        startPosImagePoint: imagePointPos,
+        endPosImagePoint: imagePointPos,
+      };
+    },
+
+    dragHandler: function(event) {
+      if (!drag) {
+        return;
+      }
+  
+      var viewportPos = viewer.viewport.pointFromPixel(event.position);
+      var diffX = viewportPos.x - drag.startPos.x;
+      var diffY = viewportPos.y - drag.startPos.y;
+  
+      var location = new OpenSeadragon.Rect(
+        Math.min(drag.startPos.x, drag.startPos.x + diffX), 
+        Math.min(drag.startPos.y, drag.startPos.y + diffY), 
+        Math.abs(diffX), 
+        Math.abs(diffY)
+      );
+  
+      viewer.updateOverlay(drag.overlayElement, location);
+      drag.endPosImagePoint = viewer.viewport.viewportToImageCoordinates(viewportPos);
+
+      var webPoint = event.position;
+      var viewportPoint = viewer.viewport.pointFromPixel(webPoint);
+      var imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
+
+      console.log(webPoint.toString(), viewportPoint.toString(), imagePoint.toString());
+    },
+
+
+
+  releaseHandler: function(event) {
+    var x1 = drag.startPosImagePoint.x;
+    var y1 = drag.startPosImagePoint.y;
+    var x2 = drag.endPosImagePoint.x;
+    var y2 = drag.endPosImagePoint.y;
+
+    Region.createNewRegionWithAJAXandAddItToRegionsElement('{{slide.sid}}', x1, y1, x2, y2);
+    
+	var height = drag.overlayElement.height;
+	drag = null;
+	selectionMode = false;
+	viewer.setMouseNavEnabled(true);
+  }
+
+});
+
+if (document.getElementById('add_new_region_button')!=null) {
+  document.getElementById('add_new_region_button').addEventListener('click', function() {
+    selectionMode = true;
+    console.log('button pressed');
+    viewer.setMouseNavEnabled(false);
+  });
+}
+
+</script>
+
+
+<script>
+// Notes on OpenSeaDragon
+// https://codepen.io/iangilman/pen/qBdabGM
+// https://stackoverflow.com/questions/36006823/openseadragon-selection information on how to return info from selection
+
+
+// Description of coordinate system
+    // https://openseadragon.github.io/examples/viewport-coordinates/
+
+
+    // var viewportPos = viewer.viewport.pointFromPixel(event.position);
+
+    // // The canvas-click event gives us a position in web coordinates.
+   //    var webPoint = event.position;
+   //    console.log(webPoint)
+
+   //    webPoint.x = x;
+   //    webPoint.y = y;
+   //    console.log(webPoint)
+
+   //    // Convert that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
+   //    var viewportPoint = viewer.viewport.pointFromPixel(webPoint);
+
+   //    // Convert from viewport coordinates to image coordinates.
+   //    var imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
+
+   //    // Show the results.
+   //    console.log(webPoint.toString(), viewportPoint.toString(), imagePoint.toString());
+
+    //   console.log(viewer.getOverlayById("box1"))
+
+console.log('viewer2', viewer)
+
+viewer.addHandler('open', function() { 
+  slide_box_debug = true;
+
+  if (slide_box_debug){
+    console.log('viewer3', viewer)
+
+    
+    {% for region in slide.region_set.all %}
+      // console.log('viewer4', viewer)
+      // console.log('viewer source', viewer.source)
+
+
+      console.log('region', {{region}})
+      var overlayElement = document.createElement('div');
+      // var dzi_width = viewer.source.width;
+      // var dzi_height = viewer.source.height;
+      // console.log('dzi width and height', dzi_width, dzi_height)
+      overlayElement.id = 'region_box_' + String({{region.rid}});
+      overlayElement.class = "slide_region_OSD"
+      overlayElement.style.border = "4px solid red"
+      if ({{region.rid}}==20220117190431 ||{{region.rid}}==20211118010730){
+        overlayElement.style.border = "8px solid green"
+      }
+      // console.log('viewport coordinate conversion', {{region.x}}, {{region.x}}/dzi_width, viewer.viewport.imageToViewportCoordinates({{region.x}}, {{region.y}}));
+      // console.log('viewport coordinate conversion2', {{region.x}}, {{region.x}}/dzi_width, viewer.viewport.imageToViewportRectangle({{region.x}}, {{region.y}}, {{region.width}}, {{region.height}}));
+
+//      var rect = new OpenSeadragon.Rect({{region.x}}/dzi_width, {{region.y}}/dzi_height, {{region.width}}/dzi_width, {{region.height}}/dzi_height);
+      var rect = viewer.viewport.imageToViewportRectangle({{region.x}}, {{region.y}}, {{region.width}}, {{region.height}});
+      // var rect = new OpenSeadragon.Rect({{region.x}}/dzi_width, {{region.y}}/dzi_height, {{region.width}}/dzi_width, {{region.height}}/dzi_height)
+      // console.log({{region.x}}/dzi_width, {{region.y}}/dzi_height, {{region.width}}/dzi_width, {{region.height}}/dzi_height)
+      viewer.addOverlay(overlayElement, rect);
+      console.log('overlayElement', overlayElement);
+      $('#'+overlayElement.id).click(function(event){
+        console.log(overlayElement.id + 'clicked', event, {{region.rid}})
+
+      })
+
+    {% endfor %}
+  }
+});
+
+// $ (document).ready(function() {
+  
+  
+// });
+
+
+  // console.log('sid is', {{slide.sid}});
+
+  // $.get('/get_all_cells_generic/', {'id_type':'sid', 'id_val':'{{slide.sid}}'}, function(json) {
+  //   if (json['success']) {
+  //           var all_cells = Cell.LoadCellsFromJson(json['cells_json'], json['celltypes_json']);
+        
+  //       var cell_num=0;
+  //       for (var key in all_cells) {
+  //         cell_num++;
+  //         if (cell_num == 10){
+  //           break;
+  //         }
+          
+  //         var cell = all_cells[key];
+  //         console.log(cell.x)
+
+  //         var overlayElement = document.createElement('div');
+  //         var dzi_width = viewer.source.width;
+  //         var dzi_height = viewer.source.height;
+  //         overlayElement.id = 'cell_box_' + String(cell_num);
+  //         overlayElement.class = "slide_cell_OSD"
+  //         overlayElement.style.border = "2px solid orange"
+
+  //         var fudgefactor = 0.01;
+  //         var rect = new OpenSeadragon.Rect(cell.x/dzi_width-fudgefactor/2, cell.y/dzi_height-fudgefactor/2, fudgefactor, fudgefactor);
+  //         viewer.addOverlay(overlayElement, rect);
+
+
+  //       }
+  //   }
+
+  // });
+
+</script>

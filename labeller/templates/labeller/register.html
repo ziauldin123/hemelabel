@@ -1,0 +1,20 @@
+{% extends 'labeller/base.html' %} 
+
+{% block content %}
+
+{% comment %} <script>
+    {% if messages %}
+        {% for message in messages %}
+            alert('{{message}}')
+        {% endfor %}
+    {% endif %}
+</script> {% endcomment %}
+
+<form method="POST">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <br>
+  <input type="submit" value="Register"/>
+</form>
+
+{% endblock %}
