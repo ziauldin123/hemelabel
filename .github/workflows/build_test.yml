@@ -24,7 +24,7 @@ jobs:
 
     - name: Run Collectstatic files
       run: |
-        python manage.py collectstatic
+        python manage.py collectstatic --noinput
 
     # - name: Run Tests
     #   run: |
