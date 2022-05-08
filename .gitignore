@@ -119,10 +119,7 @@ venv.bak/
 
 # mkdocs documentation
 /site
-<<<<<<< HEAD
 /static
-=======
->>>>>>> e5cb6f1ad7183e49c15fd4c0c79b3976d1ab980d
 
 # mypy
 .mypy_cache/
