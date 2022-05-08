@@ -48,6 +48,6 @@ jobs:
         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         application_name: Heme1
         environment_name: Heme1-env
-        version_label: 4
+        version_label: 5
         region: "us-east-1"
         deployment_package: deploy.zip
